@@ -1,0 +1,21 @@
+The top level module is CCellular, which 
+Each manager provides a service (for example, network manager)
+
+This division is to allow the different parts of dAuth to be developed and managed independently
+If a new implementation of a given service is to be used (swapping out the DB, for instance), 
+the hope is that the manager (or at least its interface) should remain the same to prevent any
+need for changing the other managers.
+
+The main components are as follows:
+
+CCellular (the central manager)
+- maintains the managers in the system, and controls basics functions like start, stop, and logging.
+
+Managers:
+- Database Manager: Any database functionality is provided by this manager. This includes operations and triggers.
+
+- Network Manager: Provides network services (such as logging) and allows for message prioritizations
+
+- Distributed Manager: Provides consensus amoung other nodes
+
+- Test Manager: Simple manager that verifies the CCellular is functioning

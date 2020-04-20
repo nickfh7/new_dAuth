@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+
+service DebugPing {
+    rpc DebugPing (PingMessage) returns (PingReply) {}
+}
+
+
+message PingMessage {
+    double time = 1;
+}
+
+message PingReply {
+    double time = 1;
+}

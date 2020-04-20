@@ -1,0 +1,13 @@
+dAuth
+-------
+
+<TODO>
+
+
+Install
+-------
+
+1. Create a virtual environment (i.e. 'virtualenv -p python3 venv'), then activate it ('source venv/bin/activate')
+2. Install dAuth with 'pip install -e .'
+3a. Run CCellular with 'ccellular'
+3b. Run the logging server with 'logging-server'
