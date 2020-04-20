@@ -57,7 +57,7 @@ class TestDatabaseManager(TestManager):
     # Executes a database operation on the local database
     # This should be called when an operation originated *remotely*
     def execute_operation(self, operation):
-        
+        pass
 
 
     # --- Interior methods ---
@@ -125,17 +125,3 @@ class TestDistributedManager(TestManager):
         info['database_manager_name'] = self.database_manager_name
         info['database_manager'] = self.database_manager
         return info
-
-
-# Used as a simple operation type
-class TestOperation:
-    operations = ['i', 'u', 'd']
-
-    def __init__(self, operation_type, operation_key, operation_value=None):
-
-        if operation_type not in TestOperation.operations:
-            raise ValueError("Not a supported operation - " + str(operation_type))
-
-        self.operation_type = operation_type
-        self.operation_key = operation_key
-        self.operation_value = operation_value
