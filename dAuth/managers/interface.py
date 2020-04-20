@@ -1,40 +1,42 @@
-# Managers are used as a standard way of controlling a given module
-# Managers should use the ManagerInterface
+# Managers are used as a standard way of controlling a given feature/service
+# All managers should extend the ManagerInterface
+# Utilizing start and stop is not necessary, nor is overwriting anything but 'name'
 
 class ManagerInterface:
     # Default attributes
     name = "Unnamed Manager"
-    modules = {}
+    managers = {}
     logger = None
 
 
     # --- Control functions ---
-    # Called by controlling module at startup
+    # Called by controlling manager at startup
     def start(self):
         pass
 
-    # Called by controlling module at shutdown
+    # Called by controlling manager at shutdown
     def stop(self):
         pass
 
-    # Called by controlling module to set available module list
-    def set_modules(self, modules):
-        self.modules = modules
+    # Called by controlling manager to set available manager list
+    def set_available_managers(self, managers):
+        self.managers = managers
 
-    # Called by contolling module to capture logging
+    # Called by contolling manager to capture logging
     # Logger function is of the form func(name, message)
     def set_logger(self, logger_function):
         self.logger = logger_function
 
     
-    # --- Module functions ---
-    # Used by the manager get another manager
-    def get_module(self, module_name):
-        module = self.modules.get(module_name)
-        if module is None:
-            self.log()
+    # --- Manager functions ---
+    # Used by the manager get access to another manager
+    def get_manager(self, name):
+        manager = self.managers.get(name)
+        if manager is None:
+            self.log("Manager not found: " + name)
+            return
 
-        return module
+        return manager
 
     # Sends a message to the logger
     def log(self, message):

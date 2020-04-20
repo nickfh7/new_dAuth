@@ -1,0 +1,10 @@
+
+Manager
+- Add DB manager
+-- Figure out arch for triggers vs distributed
+- Add Distributed manager
+-- Figrue out sawtooth and how to run transaction processor
+
+CCellular
+- Add configuration options
+-- Including parser to tweak configs

@@ -5,11 +5,11 @@ import threading
 from network.services import LoggingServer
 from network.network_manager import NetworkManager
 
-# This file is meant to serve as a way to run a network manager indefinitely
+# Runs a logging server to receive and record log messages
 
 def run_server(port=13173):
     print('Starting Logging Server')
-    nwm = NetworkManager(port=13173)
+    nwm = NetworkManager(port=14172)
     nwm.add_service(LoggingServer())
     nwm.start()
 

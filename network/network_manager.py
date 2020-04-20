@@ -5,6 +5,7 @@ import grpc
 import time
 from concurrent.futures import ThreadPoolExecutor
 from network.network_queue import NetworkPriotyQueue, NetworkMessage
+from network.services import Service
 
 
 # TODO:
@@ -32,13 +33,14 @@ class NetworkManager:
     # - logfile_dir: all logfiles will be stored there
     def __init__(self, host="localhost", port="13172", known_priorities=None, limit_to_known_priorities=False,
                  block_size=1, sleep_time=0.0001, use_thread_pool=True, thread_pool_workers=10,
-                 logfile_dir="./output/network_manager"):
+                 logfile_dir="./output/"):
         # internal
         self._service_manager = None
         self._queue = NetworkPriotyQueue(known_priorities=known_priorities, use_only_known=limit_to_known_priorities)
         self._sender_thread = None
         self._running = False
         self._thread_pool = None
+        Service._logger_dir = logfile_dir  # Set the service logs dir
 
         # logging
         self._logger = logging.getLogger("network_manager")

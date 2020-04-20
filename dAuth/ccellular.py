@@ -2,11 +2,11 @@ import logging
 import os
 
 # CCellular is the main class of dAuth
-# It starts and facilitates all other modules
+# It starts and facilitates all other managers
 class CCellular:
-    def __init__(self, logfile_dir="./output/ccellular"):
-        # a mapping of module names to module interfaces
-        self.modules = {}
+    def __init__(self, logfile_dir="./output/"):
+        # a mapping of manager names to managers
+        self.managers = {}
 
         # logging
         logger = logging.getLogger("ccellular")
@@ -21,56 +21,56 @@ class CCellular:
         # internal
         self._running = False
 
-    # Starts all modules
+    # Starts all managers
     def start(self):
         self.log("Start called")
         if not self._running:
             self._running = True
-            for module_name, module_interface in self.modules.items():
-                self.log(" Starting module: " + module_name)
+            for name, manager in self.managers.items():
+                self.log(" Starting manager: " + name)
                 try:
-                    module_interface.start()
+                    manager.start()
                 except Exception as e:
-                    self.log(' Failed to start: ' + module_name + " - " + str(e))
+                    self.log(' Failed to start: ' + manager + " - " + str(e))
         else:
             self.log(" Already running")
 
-    # Stops all modules
+    # Stops all manages
     def stop(self):
         self.log("Stop called")
         if self._running:
             self._running = True
-            for module_name, module_interface in self.modules.items():
-                self.log("Stopping module: " + module_name)
+            for name, manager in self.managers.items():
+                self.log("Stopping manager: " + name)
                 try:
-                    module_interface.stop()
+                    manager.stop()
                 except Exception as e:
-                    self.log('Failed to stop: ' + module_name + " - " + str(e))
+                    self.log('Failed to stop: ' + name + " - " + str(e))
         else:
             self.log(" Not running")
 
     # Adds a manager to the set of managers
-    def add_manager(self, module, replace=False):
-        self.log("Adding module: " + module.name)
+    def add_manager(self, manager, replace=False):
+        self.log("Adding manager: " + manager.name)
 
-        # Check for existing module first
-        if module.name in self.modules:
-            self.log(" Module already exists")
+        # Check for existing manager first
+        if manager.name in self.managers:
+            self.log(" Manager already exists")
             if replace:
-                self.log(" Replacing module")
+                self.log(" Replacing Manager")
                 if self._running:
-                    self.modules[module.name].stop()
+                    self.managers[manager.name].stop()
             else:
                 # TODO: throw exception?
                 self.log(" Not replacing")
                 return
 
-        # Add and initialize module, start if already running
-        self.modules[module.name] = module
-        module.set_logger(self._double_log)
-        module.set_modules(self.modules)
+        # Add and initialize manager, start if already running
+        self.managers[manager.name] = manager
+        manager.set_logger(self._double_log)
+        manager.set_available_managers(self.managers)
         if self._running:
-            module.start()
+            manager.start()
 
     # Log the message
     def log(self, message):
