@@ -1,37 +1,50 @@
-from dAuth.proto.database_protobuf import DatabaseOperation
+from dAuth.proto.database import DatabaseOperation
+from dAuth.utils import random_string
 
-# Used as a simple operation type
+
+# Used as a simple test of a database operation
+# Should mimic behavior
 class TestDatabaseOperation(DatabaseOperation):
     operations = ['i', 'u', 'd']
 
-    # Expects dict of the form {operation_type: <str>, operation_key: <str>, operation_value: <dict>}
+    # Expects dict with (at least) 'operation' and 'key' entries
     def __init__(self, protobuf_data):
-        operation_type = protobuf_data.get("operation_type")
-        operation_key = protobuf_data.get("operation_key")
-        operation_value = protobuf_data.get("operation_value", {})
+        operation_type = protobuf_data.get("operation")
+        operation_key = protobuf_data.get("key")
+        operation_value = protobuf_data.get("value", {})
 
         if operation_type not in TestDatabaseOperation.operations:
             raise ValueError("Not a supported operation type - " + str(operation_type))
 
-        if type(operation_value) is not dict:
+        if type(operation_key) is not str:
             raise ValueError("Operation Key must be a string - " + str(type(operation_key)))
 
-        if type(operation_value) is not dict:
-            raise ValueError("Operation Value must be a dict - " + str(type(operation_value)))
+        self.protobuf_data = protobuf_data
 
-        self.operation_type = operation_type
-        self.operation_key = operation_key
-        self.operation_value = operation_value
-        self.remote = protobuf_data.get("remote", False)
 
     def to_dict(self):
-        return self.operation_value
+        return self.protobuf_data
     
     def key(self):
-        return self.operation_key
+        return self.protobuf_data.get('key')
 
     def operation(self):
-        return self.operation_type
+        return self.protobuf_data.get("operation")
 
     def from_remote(self):
-        return self.remote
+        return self.protobuf_data.get("remote", False)
+
+    def ownership(self):
+        return self.protobuf_data.get("ownership")
+
+    def set_remote(self, remote):
+        self.protobuf_data['remote'] = remote
+
+    def set_ownership(self, owner):
+        self.protobuf_data['ownership'] = owner
+
+    def set_id(self, new_id):
+        self.protobuf_data['id'] = new_id
+
+    def id(self):
+        return self.protobuf_data['id']

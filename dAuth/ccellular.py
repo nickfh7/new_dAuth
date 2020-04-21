@@ -1,18 +1,23 @@
 import logging
 import os
 
+from dAuth.config import CCellularConfig
+from dAuth.utils import random_string
+
 # CCellular is the main class of dAuth
 # It starts and facilitates all other managers
 class CCellular:
-    def __init__(self, logfile_dir="./output/"):
+    def __init__(self, config):
+        self.id = config.ID or random_string()
+
         # a mapping of manager names to managers
         self.managers = {}
 
         # logging
-        logger = logging.getLogger("ccellular")
+        logger = logging.getLogger("ccellular-" + self.id)
         logger.setLevel(logging.DEBUG)
-        os.makedirs(logfile_dir, exist_ok=True)
-        fh = logging.FileHandler(os.path.join(logfile_dir, "ccellular.log"))
+        os.makedirs(config.OUTPUT_DIR, exist_ok=True)
+        fh = logging.FileHandler(os.path.join(config.OUTPUT_DIR, "ccellular.log"))
         fh.setLevel(logging.DEBUG)
         logger.addHandler(fh)
         self.local_logger = logger.debug
@@ -20,6 +25,7 @@ class CCellular:
 
         # internal
         self._running = False
+        print("CCellular is running with ID: " + self.id)
 
     # Starts all managers
     def start(self):
@@ -67,6 +73,7 @@ class CCellular:
 
         # Add and initialize manager, start if already running
         self.managers[manager.name] = manager
+        manager.id = self.id
         manager.set_logger(self._double_log)
         manager.set_available_managers(self.managers)
         if self._running:
@@ -74,7 +81,10 @@ class CCellular:
 
     # Log the message
     def log(self, message):
-        self._double_log("CCellular", message)
+        if self.id:
+            self._double_log("CCellular:"+self.id, message)
+        else:
+            self._double_log("CCellular", message)
 
     # Sends message to local and/or remote logger
     def _double_log(self, category, message):

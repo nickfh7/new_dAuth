@@ -2,16 +2,16 @@
 # Wrappers are designed to:
 #  - Hold onto to a protobuf message
 #  - Provide helper functions (i.e. to dict for database)
-#  - Abstract protobuf fields
+#  - Abstract away protobuf fields
 
 
 # Represents a generic database operation
 # Contains the protobuf message with the relevant data
 class DatabaseOperation:
     # Can be constructed with a message or a dict
-    def __init__(self, protobuf_data=None):
+    def __init__(self, protobuf_data):
         if type(protobuf_data) is dict:
-            self.protobuf_message = self.dict_to_protobuf(protobuf_message)
+            self.protobuf_message = self.dict_to_protobuf(protobuf_data)
         else:
             self.protobuf_message = protobuf_data
 
@@ -29,6 +29,26 @@ class DatabaseOperation:
 
     # Returns if this message originated non-locally
     def from_remote(self):
+        pass
+
+    # Returns the name of the dAuth node this operation originated from
+    def ownership(self):
+        pass
+
+    # Returns a unique identifier for this transaction
+    def id(self):
+        pass
+
+    # Sets the remote field of the protobuf data
+    def set_remote(self, set_to):
+        pass
+
+    # Sets the ownership field of the protobuf data
+    def set_ownership(self, owner):
+        pass
+
+    # Sets the id field of the protobuf data
+    def set_id(self, new_id):
         pass
 
 

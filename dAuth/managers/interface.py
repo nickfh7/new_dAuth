@@ -8,14 +8,40 @@ class ManagerInterface:
     managers = {}
     logger = None
 
+    def __init__(self, conf=None, name=None):
+        self.id = None
+        if name:
+            self.name = name
+        self._running = False
+
 
     # --- Control functions ---
     # Called by controlling manager at startup
     def start(self):
+        if not self._running:
+            self.log("Starting " + self.name)
+            self._running = True
+
+            self._start()
+
+        else:
+            self.log(self.name + " is already running")
+
+    def _start(self):
         pass
 
     # Called by controlling manager at shutdown
     def stop(self):
+        if self._running:
+            self.log("Stopping " + self.name)
+            self._running = False
+
+            self._stop()
+
+        else:
+            self.log(self.name + " is not running")
+
+    def _stop(self):
         pass
 
     # Called by controlling manager to set available manager list
@@ -44,3 +70,19 @@ class ManagerInterface:
             self.logger(self.name, message)
         else:
             print("<{0}> {1}".format(self.name, message))
+
+    
+    # Returns a dict of basic info
+    def info(self):
+        return {
+            "name" : self.name,
+            "logger" : str(self.logger),
+            "running" : str(self._running),
+            "managers" : str(", ".join(self.managers.keys())),
+        }
+
+    # Logs the info dict
+    def log_info(self):
+        info = ["Info for " + self.name + ":"]
+        info.extend(["{0} - {1}".format(k, v) for k, v in self.info().items()])
+        self.log("\n   ".join(info))

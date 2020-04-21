@@ -1,20 +1,15 @@
 # This file contains global configuration objects
 # Default values should be set here
+# In the main file, an instance of each of these should be made 
+#  and given to the respective service
 # Values can be changed at runtime via parser/input (TODO)
-
-import random
-import string
-
-
-def random_string(stringLength=10):
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for i in range(stringLength))
 
 
 # Used for anything not tied to a particular manager
 class CCellularConfig:
-    # Randomly generate id
-    ID = random_string()
+    # Randomly generate id in ccellular init
+    ID = None
+    OUTPUT_DIR = "./output"
 
 
 class NetworkManagerConfig:
