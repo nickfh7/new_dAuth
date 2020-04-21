@@ -1,7 +1,15 @@
+from dAuth.proto.database_proto import DatabaseOperation
+
 # Managers are used as a standard way of controlling a given feature/service
-# All managers should extend the ManagerInterface
+# All managers should extend the ManagerInterface (or appropriate sub-interface)
 # Utilizing start and stop is not necessary, nor is overwriting anything but 'name'
 
+
+# Base manager interface
+# Provides basic functionality: 
+#  - start/stop functions (overwrite _start/_stop)
+#  - basic central manager interactions (get other managers, set logger)
+#  - logging via the set logger (usually handled by the central manager)
 class ManagerInterface:
     # Default attributes
     name = "Unnamed Manager"
@@ -71,7 +79,6 @@ class ManagerInterface:
         else:
             print("<{0}> {1}".format(self.name, message))
 
-    
     # Returns a dict of basic info
     def info(self):
         return {
@@ -86,3 +93,33 @@ class ManagerInterface:
         info = ["Info for " + self.name + ":"]
         info.extend(["{0} - {1}".format(k, v) for k, v in self.info().items()])
         self.log("\n   ".join(info))
+
+
+# Standard interface for database management
+# Provides methods for executing remote and propagating local operations
+class DatabaseManagerInterface(ManagerInterface):
+    def __init__(self, conf=None, name=None):
+        super().__init__(conf=conf, name=name)
+
+    # Required function for executing remote operations
+    def execute_operation(self, operation: DatabaseOperation):
+        raise NotImplementedError()
+
+    # Required function for propagating local operations
+    def new_local_operation(self, operation: DatabaseOperation):
+        raise NotImplementedError()
+
+
+# Standard interface for distributed management
+# Provides methods for passing along remote and propagating out operations
+class DistributedManagerInterface(ManagerInterface):
+    def __init__(self, conf=None, name=None):
+        super().__init__(conf=conf, name=name)
+
+    # Required function for propagating local operations
+    def propagate_operation(self, operation: DatabaseOperation):
+        raise NotImplementedError()
+        
+    # Required function for passing remote operations
+    def new_remote_operation(self, operation: DatabaseOperation):
+        raise NotImplementedError()

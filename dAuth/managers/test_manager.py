@@ -1,7 +1,7 @@
 import copy
 
-from dAuth.managers.interface import ManagerInterface
-from dAuth.proto.database import DatabaseOperation
+from dAuth.managers.interface import DistributedManagerInterface, DatabaseManagerInterface, ManagerInterface
+from dAuth.proto.database_proto import DatabaseOperation
 from dAuth.utils import random_string
 
 # Simple generic test manager
@@ -19,7 +19,7 @@ class TestManager(ManagerInterface):
 
 # Test manager that emulates a basic database setup
 # Allows for random database triggering
-class TestDatabaseManager(ManagerInterface):
+class TestDatabaseManager(DatabaseManagerInterface):
     name = "Test Database Manager"
 
     def __init__(self, conf=None, name=None, distributed_manager_name=None):
@@ -112,7 +112,7 @@ class TestDatabaseManager(ManagerInterface):
 
 
 # Test manager that emulates a basic distributed node
-class TestDistributedManager(ManagerInterface):
+class TestDistributedManager(DistributedManagerInterface):
     name = "Test Distributed Manager"
 
     def __init__(self, conf=None, name=None, database_manager_name=None):

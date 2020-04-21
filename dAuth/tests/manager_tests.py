@@ -1,6 +1,6 @@
 from dAuth.ccellular import CCellular
 from dAuth.managers import NetworkManager, TestManager, TestDatabaseManager, TestDistributedManager
-from dAuth.proto.test_protobuf import TestDatabaseOperation
+from dAuth.proto.test_proto import TestDatabaseOperation
 from dAuth.config import NetworkManagerConfig
 
 def simple_manager_test(manager_type, test_name, cc_conf):
