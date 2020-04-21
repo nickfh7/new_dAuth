@@ -31,7 +31,7 @@ class TestDatabaseOperation(DatabaseOperation):
     def operation(self):
         return self.protobuf_data.get("operation")
 
-    def from_remote(self):
+    def remote(self):
         return self.protobuf_data.get("remote", False)
 
     def ownership(self):

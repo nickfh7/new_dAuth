@@ -1,3 +1,5 @@
+import copy
+
 from dAuth.managers.interface import ManagerInterface
 from dAuth.proto.database import DatabaseOperation
 from dAuth.utils import random_string
@@ -46,30 +48,40 @@ class TestDatabaseManager(ManagerInterface):
     # This should be called when an operation originated *remotely*
     def execute_operation(self, operation: DatabaseOperation):
         self.log("Executing operation")
-        op_type = operation.operation()
-        key = operation.key()
-        value = operation.to_dict()
+        op_type = copy.copy(operation.operation())
+        key = copy.copy(operation.key())
+        value = copy.deepcopy(operation.to_dict())
+        success = False
 
         if op_type is 'i':
             self.log(" Doing insert operation on " + key)
             if key not in self._database:
                 self._database[key] = value
+                success = True
             else:
                 self.log("  Key already exists, ignoring")
         elif op_type is 'u':
             self.log(" Doing update operation on " + key)
             if key in self._database:
                 self._database[key] = value
+                success = True
             else:
                 self.log("  Key doesn't exist, ignoring")
         elif op_type is 'd':
             self.log(" Doing delete operation on " + key)
             if key in self._database:
                 del self._database[key]
+                success = True
             else:
                 self.log("  Key doesn't exist, ignoring")
         else:
             self.log(" Bad operation type: " + op_type)
+        
+        if success:
+            if not operation.remote():
+                self.new_local_operation(operation)
+            else:
+                self.log(" Operation from remote, not propagating")
 
 
     # --- Interior methods ---
@@ -89,7 +101,6 @@ class TestDatabaseManager(ManagerInterface):
     # Used in testing for simulating a trigger
     def simulate_trigger(self, operation: DatabaseOperation):
         self.execute_operation(operation)
-        self.new_local_operation(operation)
 
 
     def info(self):

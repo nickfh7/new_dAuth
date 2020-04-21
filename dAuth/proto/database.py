@@ -28,7 +28,7 @@ class DatabaseOperation:
         pass
 
     # Returns if this message originated non-locally
-    def from_remote(self):
+    def remote(self):
         pass
 
     # Returns the name of the dAuth node this operation originated from
