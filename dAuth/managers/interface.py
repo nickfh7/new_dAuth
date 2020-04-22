@@ -16,7 +16,7 @@ class ManagerInterface:
     managers = {}
     logger = None
 
-    def __init__(self, conf=None, name=None):
+    def __init__(self, conf, name=None):
         self.id = None
         if name:
             self.name = name
@@ -98,8 +98,8 @@ class ManagerInterface:
 # Standard interface for database management
 # Provides methods for executing remote and propagating local operations
 class DatabaseManagerInterface(ManagerInterface):
-    def __init__(self, conf=None, name=None):
-        super().__init__(conf=conf, name=name)
+    def __init__(self, conf, name=None):
+        super().__init__(conf, name=name)
 
     # Required function for executing remote operations
     def execute_operation(self, operation: DatabaseOperation):
@@ -113,8 +113,8 @@ class DatabaseManagerInterface(ManagerInterface):
 # Standard interface for distributed management
 # Provides methods for passing along remote and propagating out operations
 class DistributedManagerInterface(ManagerInterface):
-    def __init__(self, conf=None, name=None):
-        super().__init__(conf=conf, name=name)
+    def __init__(self, conf, name=None):
+        super().__init__(conf, name=name)
 
     # Required function for propagating local operations
     def propagate_operation(self, operation: DatabaseOperation):

@@ -4,23 +4,27 @@ import os
 from dAuth.config import CCellularConfig
 from dAuth.utils import random_string
 
-# CCellular is the main class of dAuth
+# CCellular is the central manager of dAuth
 # It starts and facilitates all other managers
 class CCellular:
-    def __init__(self, config):
-        self.id = config.ID or random_string()
+    def __init__(self, config, logging_active=True):
+        self.id = config.ID or random_string()  # generate random id if one is not configured
 
         # a mapping of manager names to managers
         self.managers = {}
 
         # logging
-        logger = logging.getLogger("ccellular-" + self.id)
-        logger.setLevel(logging.DEBUG)
-        os.makedirs(config.OUTPUT_DIR, exist_ok=True)
-        fh = logging.FileHandler(os.path.join(config.OUTPUT_DIR, "ccellular.log"))
-        fh.setLevel(logging.DEBUG)
-        logger.addHandler(fh)
-        self.local_logger = logger.debug
+        if logging_active:
+            logger = logging.getLogger("ccellular-" + self.id)
+            logger.setLevel(logging.DEBUG)
+            os.makedirs(config.OUTPUT_DIR, exist_ok=True)
+            fh = logging.FileHandler(os.path.join(config.OUTPUT_DIR, "ccellular.log"))
+            fh.setLevel(logging.DEBUG)
+            logger.addHandler(fh)
+            self.local_logger = logger.debug
+        else:
+            self.local_logger = None
+        
         self.remote_logger = None
 
         # internal

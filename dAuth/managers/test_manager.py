@@ -7,8 +7,8 @@ from dAuth.utils import random_string
 # Simple generic test manager
 class TestManager(ManagerInterface):
     name = "Test Manager"
-    def __init__(self, conf=None, name=None):
-        super().__init__(name=name)
+    def __init__(self, config, name=None):
+        super().__init__(config, name=name)
 
     def _start(self):
         self.log("_start called in TestManager")
@@ -22,8 +22,8 @@ class TestManager(ManagerInterface):
 class TestDatabaseManager(DatabaseManagerInterface):
     name = "Test Database Manager"
 
-    def __init__(self, conf=None, name=None, distributed_manager_name=None):
-        super().__init__(name=name)
+    def __init__(self, config, name=None, distributed_manager_name=None):
+        super().__init__(config, name=name)
         self._database = {}  # simple kv database
         self.distributed_manager = None
         self.distributed_manager_name = distributed_manager_name or TestDistributedManager.name
@@ -115,8 +115,8 @@ class TestDatabaseManager(DatabaseManagerInterface):
 class TestDistributedManager(DistributedManagerInterface):
     name = "Test Distributed Manager"
 
-    def __init__(self, conf=None, name=None, database_manager_name=None):
-        super().__init__(name=name)
+    def __init__(self, config, name=None, database_manager_name=None):
+        super().__init__(config, name=name)
         self._known_operations = {}  # A dict of known propagated operations
         self._nodes = {}
         self.database_manager = None

@@ -6,28 +6,25 @@ from dAuth.ccellular import CCellular
 from dAuth.managers import NetworkManager, TestManager, TestDatabaseManager, TestDistributedManager
 from network.services import LoggingClient
 from dAuth.config import CCellularConfig, NetworkManagerConfig, DatabaseManagerConfig, DistributedManagerConfig
+from dAuth.parser import parse_args
 
 def main():
     print("Starting dAuth")
 
-    # Config
+    # Set up config objects and parsing
     cc_config = CCellularConfig()
     nwm_config = NetworkManagerConfig()
     dbm_config = DatabaseManagerConfig()
     dstm_config = DistributedManagerConfig()
+    parse_args(cc_config=cc_config, nwm_config=nwm_config, dbm_config=dbm_config, dstm_config=dstm_config)
 
     # Create the central manager
     cc = CCellular(cc_config)
 
-    # Add the network manager
+    # Add the network manager and grab logging function
     nwm = NetworkManager(nwm_config)
-    # Grab the logging function
     cc.logger = nwm.get_service(LoggingClient.name).log
     cc.add_manager(nwm)
-
-    # Add test manager for debugging
-    tm = TestManager()
-    cc.add_manager(tm)
 
     # Add database manager
     dbm = TestDatabaseManager(dbm_config)
@@ -46,6 +43,7 @@ def main():
         cc.stop()
         sys.exit(0)
 
+    # Wait until interrupt
     signal.signal(signal.SIGINT, stop_server)
     print("Ctr-c to stop")
     forever = threading.Event()

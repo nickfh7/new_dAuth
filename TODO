@@ -1,10 +1,21 @@
+Major areas to work on:
 
-Manager
-- Add DB manager
--- Figure out arch for triggers vs distributed
-- Add Distributed manager
--- Figrue out sawtooth and how to run transaction processor
+> Add database manager:
+  - A lot of the work should be done in the original dAuth
+  - Figure out how to appropriately run Mongodb with replicant
+  - Maybe steal the dbconf.sh script from nextepc?
+  - Add configuration options to config and parser
 
-CCellular
-- Add configuration options
--- Including parser to tweak configs
+> Add distributed manager:
+  - Again, a lot of the work should be done
+  - Figure out the transaction processor, how it work, what to give it
+  - Figure out the validator and how to set it up
+  - Add configuration options to config and parser
+
+> Add protobuf messages:
+  - The real managers need protobuf to talk
+  - For now, all that is needed is the database data protobuf
+
+> Unit testing:
+  - Add unit tests to the testing package
+  - As a start, make a basic framework test with the test managers
