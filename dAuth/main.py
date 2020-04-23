@@ -9,8 +9,6 @@ from dAuth.config import CCellularConfig, NetworkManagerConfig, DatabaseManagerC
 from dAuth.parser import parse_args
 
 def main():
-    print("Starting dAuth")
-
     # Set up config objects and parsing
     cc_config = CCellularConfig()
     nwm_config = NetworkManagerConfig()
@@ -35,6 +33,7 @@ def main():
     cc.add_manager(dstm)
 
     # Start running CCellular
+    print("Starting dAuth")
     cc.start()
 
     # Create end function

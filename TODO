@@ -19,3 +19,5 @@ Major areas to work on:
 > Unit testing:
   - Add unit tests to the testing package
   - As a start, make a basic framework test with the test managers
+  - Tests for each manager separately would be good too
+  - Finally, some way of testing the entire system

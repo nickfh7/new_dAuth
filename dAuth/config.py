@@ -1,8 +1,8 @@
 # This file contains global configuration objects
 # Default values should be set here
 # In the main file, an instance of each of these should be made 
-#  and given to the respective service
-# Values can be changed at runtime via parser/input (TODO)
+#  and given to the respective manager
+# Values can be changed at runtime via parser
 
 
 # Used for anything not tied to a particular manager
@@ -25,9 +25,23 @@ class NetworkManagerConfig:
 
 
 class DatabaseManagerConfig:
-    pass
+    NAME = "Database Manager"
+
+    # Database
+    HOST = 'localhost'
+    PORT = 27017
+    DATABASE_NAME = "open5gs"
+    COLLECTION_NAME = "subscribers"
+
+    # Which distributed manager to talk to
+    DISTRIBUTED_MANAGER_NAME = None
 
 
 class DistributedManagerConfig:
-    pass
+    NAME = "Database Manager"
 
+    DATABASE_MANAGER_NAME = DatabaseManagerConfig.NAME
+
+
+# Hack, sorry
+DatabaseManagerConfig.DISTRIBUTED_MANAGER_NAME = DistributedManagerConfig.NAME

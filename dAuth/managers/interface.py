@@ -1,4 +1,5 @@
 from dAuth.proto.database_proto import DatabaseOperation
+from dAuth.config import DatabaseManagerConfig, DistributedManagerConfig
 
 # Managers are used as a standard way of controlling a given feature/service
 # All managers should extend the ManagerInterface (or appropriate sub-interface)
@@ -98,7 +99,9 @@ class ManagerInterface:
 # Standard interface for database management
 # Provides methods for executing remote and propagating local operations
 class DatabaseManagerInterface(ManagerInterface):
-    def __init__(self, conf, name=None):
+    name = DatabaseManagerConfig.NAME
+
+    def __init__(self, conf:DatabaseManagerConfig, name=None):
         super().__init__(conf, name=name)
 
     # Required function for executing remote operations
@@ -113,6 +116,8 @@ class DatabaseManagerInterface(ManagerInterface):
 # Standard interface for distributed management
 # Provides methods for passing along remote and propagating out operations
 class DistributedManagerInterface(ManagerInterface):
+    name = DistributedManagerConfig.NAME
+
     def __init__(self, conf, name=None):
         super().__init__(conf, name=name)
 

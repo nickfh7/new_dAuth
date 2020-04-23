@@ -6,6 +6,8 @@ if __name__ == '__main__':
         version="0.1",
         packages=find_packages(),
         install_requires=[
+            'pymongo',
+            'mongotriggers',
             "protobuf",
             "grpcio",
         ],
@@ -13,5 +15,7 @@ if __name__ == '__main__':
             'console_scripts': [
                 'ccellular = dAuth.main:main',
                 'logging-server = network.logging_server:run_server',
+                'test-ccellular = dAuth.tests.testing:main',
+                'db-operation = dAuth.database.operations_cli:main',
             ]
         })

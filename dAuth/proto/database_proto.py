@@ -8,6 +8,11 @@
 # Represents a generic database operation
 # Contains the protobuf message with the relevant data
 class DatabaseOperation:
+    # Constants for operation type
+    INSERT = "i"
+    UPDATE = "u"
+    DELETE = "d"
+
     # Can be constructed with a message or a dict
     def __init__(self, protobuf_data):
         if type(protobuf_data) is dict:
@@ -39,15 +44,25 @@ class DatabaseOperation:
     def id(self):
         pass
 
-    # Sets the remote field of the protobuf data
+
+    # Operation types
+    def is_insert(self):
+        return self.operation() is self.INSERT
+
+    def is_update(self):
+        return self.operation() is self.UPDATE
+
+    def is_delete(self):
+        return self.operation() is self.DELETE
+
+
+    # Set attributes
     def set_remote(self, set_to):
         pass
 
-    # Sets the ownership field of the protobuf data
     def set_ownership(self, owner):
         pass
 
-    # Sets the id field of the protobuf data
     def set_id(self, new_id):
         pass
 

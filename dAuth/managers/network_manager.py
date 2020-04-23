@@ -1,10 +1,11 @@
 from dAuth.managers.interface import ManagerInterface
+from dAuth.config import NetworkManagerConfig
 from network import NetworkManager, services
 
 class NetworkManagerWrapper(ManagerInterface):
     name = "Network Manager"
 
-    def __init__(self, config, name=None):
+    def __init__(self, config:NetworkManagerConfig, name=None):
         super().__init__(config, name=name)
 
         # Build network manager

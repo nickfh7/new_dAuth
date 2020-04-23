@@ -3,3 +3,4 @@ output/
 *.egg-info/
 venv/
 *__pycache__/
+.database
