@@ -1,7 +1,7 @@
 import copy
 
 from dAuth.managers.interface import DistributedManagerInterface, DatabaseManagerInterface, ManagerInterface
-from dAuth.proto.database_proto import DatabaseOperation
+from dAuth.proto.database import DatabaseOperation
 from dAuth.utils import random_string
 
 # Simple generic test manager

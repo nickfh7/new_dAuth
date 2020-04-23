@@ -1,0 +1,21 @@
+syntax = "proto3";
+package database;
+
+message DatabaseData {
+    enum Operation {
+        INSERT = 0;
+        UPDATE = 1;
+        DELETE = 2;
+    }
+    string _id = 6;
+    Operation operation = 1;
+    bool remote = 2;
+    string ownership = 3;
+
+    // Database data
+    string imsi = 4;
+    string security = 5;
+
+    // For update only
+    string update_data = 7;
+}

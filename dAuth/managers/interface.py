@@ -1,4 +1,4 @@
-from dAuth.proto.database_proto import DatabaseOperation
+from dAuth.proto.database import DatabaseOperation
 from dAuth.config import DatabaseManagerConfig, DistributedManagerConfig
 
 # Managers are used as a standard way of controlling a given feature/service
@@ -18,6 +18,7 @@ class ManagerInterface:
     logger = None
 
     def __init__(self, conf, name=None):
+        self.conf = conf
         self.id = None
         if name:
             self.name = name

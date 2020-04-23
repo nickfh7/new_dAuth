@@ -3,7 +3,7 @@ import sys
 import threading
 
 from dAuth.ccellular import CCellular
-from dAuth.managers import NetworkManager, TestManager, TestDatabaseManager, TestDistributedManager
+from dAuth.managers import NetworkManager, TestManager, TestDatabaseManager, TestDistributedManager, DatabaseManager
 from network.services import LoggingClient
 from dAuth.config import CCellularConfig, NetworkManagerConfig, DatabaseManagerConfig, DistributedManagerConfig
 from dAuth.parser import parse_args
@@ -25,12 +25,13 @@ def main():
     cc.add_manager(nwm)
 
     # Add database manager
-    dbm = TestDatabaseManager(dbm_config)
+    # dbm = TestDatabaseManager(dbm_config)
+    dbm = DatabaseManager(dbm_config)
     cc.add_manager(dbm)
 
-    # Add distributed manager
-    dstm = TestDistributedManager(dstm_config)
-    cc.add_manager(dstm)
+    # # Add distributed manager
+    # dstm = TestDistributedManager(dstm_config)
+    # cc.add_manager(dstm)
 
     # Start running CCellular
     print("Starting dAuth")

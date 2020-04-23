@@ -24,19 +24,20 @@ def parse_args(cc_config:CCellularConfig=None,
         parser.add_argument("--nwm-out", help="directory for output, i.e. logs", default=nwm_config.OUTPUT_DIR)
         parser.add_argument("--nwm-port", help="port to run gRPC server on", default=nwm_config.GRPC_PORT)
         parser.add_argument("--nwm-log-host", help="host of the logging server", default=nwm_config.LOGGING_SERVER_HOST)
-        parser.add_argument("--nwm-log-port", help="port of teh logging server", default=nwm_config.LOGGING_SERVER_PORT)
+        parser.add_argument("--nwm-log-port", help="port of the logging server", default=nwm_config.LOGGING_SERVER_PORT)
 
     # Database manager
     if dbm_config:
-        pass
+        parser.add_argument("--db-host", help="host for the Mongo db", default=dbm_config.HOST)
+        parser.add_argument("--db-port", help="port for the Mongo db", default=dbm_config.PORT)
+        parser.add_argument("--db-name", help="name of the database", default=dbm_config.DATABASE_NAME)
+        parser.add_argument("--db-collection", help="name of collection within database", default=dbm_config.COLLECTION_NAME)
 
     # Distributed manager
     if dstm_config:
         pass
 
-
     args = parser.parse_args()
-    print(args)
 
     # Add results to each config
     # CCellular
@@ -53,7 +54,10 @@ def parse_args(cc_config:CCellularConfig=None,
 
     # Database manager
     if dbm_config:
-        pass
+        dbm_config.HOST = args.db_host
+        dbm_config.PORT = args.db_port
+        dbm_config.DATABASE_NAME = args.db_name
+        dbm_config.COLLECTION_NAME = args.db_collection
 
 
     # Distributed manager

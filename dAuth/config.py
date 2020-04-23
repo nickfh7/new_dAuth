@@ -33,12 +33,12 @@ class DatabaseManagerConfig:
     DATABASE_NAME = "open5gs"
     COLLECTION_NAME = "subscribers"
 
-    # Which distributed manager to talk to
+    # Name of distributed manager to talk to
     DISTRIBUTED_MANAGER_NAME = None
 
 
 class DistributedManagerConfig:
-    NAME = "Database Manager"
+    NAME = "Distributed Manager"
 
     DATABASE_MANAGER_NAME = DatabaseManagerConfig.NAME
 

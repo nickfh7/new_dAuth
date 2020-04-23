@@ -17,5 +17,3 @@ Managers:
 - Network Manager: Provides network services (such as logging) and allows for message prioritizations
 
 - Distributed Manager: Provides consensus amoung other nodes
-
-- Test Manager: Simple manager that verifies the CCellular is functioning
