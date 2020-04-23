@@ -6,13 +6,14 @@ from dAuth.proto.database import DatabaseOperation
 class NextEPCHandler:
     # Takes in client, db and collection names, and a trigger callback
     # Trigger callback should be used AFTER the data has been processed into a DatabaseOperation
+    # Optional logger function to capture logs
     def __init__(self, client, db_name, collection_name, trigger_callback, ownership, logger=None):
         self.client = client
         self.database = client[db_name]
         self.triggers = MongoTrigger(client)
         self.trigger_callback = trigger_callback
         self.ownership = ownership
-        self.logger = logger
+        self.logger = logger  # used to send logs back to manager
 
         self.db_name = db_name
         self.collection_name = collection_name
@@ -54,6 +55,7 @@ class NextEPCHandler:
         operation = DatabaseOperation(protobuf_data=op_document, op_type=DatabaseOperation.DELETE)
         self._handle_operation(operation)
 
+    # Called by all triggers, determines if operation should be propagated
     def _handle_operation(self, operation:DatabaseOperation):
         # check if this is a local operation
         if not operation.remote():
