@@ -8,8 +8,6 @@ from dAuth.proto.database_pb2 import DatabaseData
 #  - Provide helper functions (i.e. make dict for database)
 #  - Abstract away protobuf fields
 
-# TODO: Add filter function? Create a filter for the database
-# TODO: Add update string? Could reduce data cost, may even be necessary
 
 # Represents a generic database operation
 # Contains the protobuf message with the relevant data
@@ -21,8 +19,8 @@ class DatabaseOperation:
 
     # Can be constructed with a message or a dict
     # Op_type must be specified with a dict
-    def __init__(self, protobuf_data, op_type=None):
-
+    # Op_code is used for testing (specifically the simulated distributed system)
+    def __init__(self, protobuf_data, op_type=None, op_id=None):
         # if the type is an op document (dict), build based on data and op type
         if type(protobuf_data) is dict:
             # check the op type is valid
@@ -60,6 +58,9 @@ class DatabaseOperation:
         
         else:
             raise ValueError("protobuf data is invalid")
+
+        # Used for debugging / testing
+        self.op_id = op_id
 
     # Returns a dictionary with the protobuf message data
     def to_dict(self):

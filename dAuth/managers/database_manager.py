@@ -4,6 +4,7 @@ from dAuth.managers.interface import DatabaseManagerInterface
 from dAuth.proto.database import DatabaseOperation
 from dAuth.config import DatabaseManagerConfig
 from dAuth.database.operations import MongoDBOperations
+from dAuth.database.operations_cli import do_insert, do_update, do_delete
 from dAuth.database.nextepc_handler import NextEPCHandler
 
 
@@ -14,8 +15,8 @@ class DatabaseManager(DatabaseManagerInterface):
     client = None
     database = None
 
-    def __init__(self, conf:DatabaseManagerConfig, name=None):
-        super().__init__(conf, name=name)
+    def __init__(self, conf:DatabaseManagerConfig):
+        super().__init__(conf)
 
     def _start(self):
         conf = self.conf
@@ -72,4 +73,38 @@ class DatabaseManager(DatabaseManagerInterface):
             self.distributed_manager.propagate_operation(operation)
         else:
             self.log(" No distributed manager found, unable to propagate")
+
+
+    # Debug / test functions (ignore normal checks and logs)
+    # Meant to simulate outside operations
+    def database_insert(self, key:str, data:dict):
+        try:
+            do_insert(self.collection, key, data)
+        except Exception as e:
+            self.log("database_insert failed: " + str(e))
+
+    def database_update(self, key:str, data:dict):
+        try:
+            do_update(self.collection, key, data)
+        except Exception as e:
+            self.log("database_update failed: " + str(e))
+        
+    def database_delete(self, key:str):
+        try:
+            do_delete(self.collection, key)
+        except Exception as e:
+            self.log("database_delete failed: " + str(e))
+
+    def database_get(self, key:str):
+        try:
+            # Try to get op document, return only relevant data
+            res = self.collection.find({"_id":key})
+            if res is not None:
+                try:
+                    return res[0]
+                except IndexError:
+                    return None
+        except Exception as e:
+            self.log("database_get failed: " + str(e))
+        
 

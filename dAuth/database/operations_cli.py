@@ -1,5 +1,6 @@
 import argparse
 import json
+import copy
 from pymongo import MongoClient
 
 from dAuth.config import DatabaseManagerConfig
@@ -9,6 +10,25 @@ from dAuth.proto.database import DatabaseOperation
 
 # Command line utility for executing operations on the Mongo database
 # Uses the same operation functions as the database manager
+
+
+# Simple wrapper functions for producing and executing operations
+def do_insert(collection, key:str, data:dict):
+    new_data = copy.copy(data)
+    new_data["_id"] = key
+    operation = DatabaseOperation({"o": new_data}, op_type=DatabaseOperation.INSERT)
+    do_operation(collection, operation)
+
+def do_update(collection, key:str, data:dict):
+    new_data = {"o2": {"_id":key}, "o": {"$v": 1, "$set": data}}
+    operation = DatabaseOperation(new_data, op_type=DatabaseOperation.UPDATE)
+    do_operation(collection, operation)
+
+def do_delete(collection, key:str):
+    new_data = {"o": {"_id": key}}
+    operation = DatabaseOperation(new_data, op_type=DatabaseOperation.DELETE)
+    do_operation(collection, operation)
+
 
 # Execute the operation with provided data
 def do_operation(collection, operation:DatabaseOperation):

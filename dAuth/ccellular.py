@@ -29,7 +29,7 @@ class CCellular:
 
         # internal
         self._running = False
-        print("CCellular is running with ID: " + self.id)
+        self.log("CCellular is running with ID: " + self.id)
 
     # Starts all managers
     def start(self):
@@ -41,7 +41,7 @@ class CCellular:
                 try:
                     manager.start()
                 except Exception as e:
-                    self.log(' Failed to start: ' + manager + " - " + str(e))
+                    self.log(' Failed to start: ' + manager.name + " - " + str(e))
         else:
             self.log(" Already running")
 

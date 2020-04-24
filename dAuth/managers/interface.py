@@ -17,11 +17,10 @@ class ManagerInterface:
     managers = {}
     logger = None
 
-    def __init__(self, conf, name=None):
+    def __init__(self, conf):
         self.conf = conf
         self.id = None
-        if name:
-            self.name = name
+        self.name = conf.NAME
         self._running = False
 
 
@@ -102,8 +101,8 @@ class ManagerInterface:
 class DatabaseManagerInterface(ManagerInterface):
     name = DatabaseManagerConfig.NAME
 
-    def __init__(self, conf:DatabaseManagerConfig, name=None):
-        super().__init__(conf, name=name)
+    def __init__(self, conf:DatabaseManagerConfig):
+        super().__init__(conf)
 
     # Required function for executing remote operations
     def execute_operation(self, operation: DatabaseOperation):
@@ -119,8 +118,8 @@ class DatabaseManagerInterface(ManagerInterface):
 class DistributedManagerInterface(ManagerInterface):
     name = DistributedManagerConfig.NAME
 
-    def __init__(self, conf, name=None):
-        super().__init__(conf, name=name)
+    def __init__(self, conf):
+        super().__init__(conf)
 
     # Required function for propagating local operations
     def propagate_operation(self, operation: DatabaseOperation):

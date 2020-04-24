@@ -7,12 +7,16 @@
 
 # Used for anything not tied to a particular manager
 class CCellularConfig:
+    NAME = "CCellular"
+
     # Randomly generate id in ccellular init
     ID = None
     OUTPUT_DIR = "./output"
 
 
 class NetworkManagerConfig:
+    NAME = "Network Manager"
+
     # General
     GRPC_PORT = 13127
     OUTPUT_DIR = "./output"
