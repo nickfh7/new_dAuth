@@ -4,9 +4,12 @@ from dAuth.proto.database_pb2 import DatabaseData
 
 # This file contains wrappers for proto messages
 # Wrappers are designed to:
-#  - Hold onto to a protobuf message
+#  - Handle the creation of protobuf messages
 #  - Provide helper functions (i.e. make dict for database)
 #  - Abstract away protobuf fields
+
+# TODO: Restructure protobuf message?
+#  -- Could create generic data field, would make more generalized
 
 
 # Represents a generic database operation
@@ -82,6 +85,10 @@ class DatabaseOperation:
     def ownership(self):
         return self.protobuf_message.ownership
 
+    # Returns the size of the protobuf message
+    def size(self):
+        return self.protobuf_message.s
+
 
     # Operation types
     def is_insert(self):
@@ -112,17 +119,27 @@ class DatabaseOperation:
         if self.is_insert():
             return None
         
-        # _id is all that is needed for update and delete
+        # insert and delete need _id
         if self.is_update():
             return {"_id": self.key()}
         
         if self.is_delete():
             return {"_id": self.key()}
 
-    # If operation is update, return relevant update info
-    def get_update_data(self):
+    # Return relevant data depending on operation
+    def get_data(self):
+        # return all data for inserts
+        if self.is_insert():
+            return self.protobuf_to_dict(self.protobuf_message)
+
+        # return only update data for updates
         if self.is_update():
             return json.loads(self.protobuf_message.update_data)
+
+        # deletes don't have/need data
+        if self.is_delete():
+            return None
+
 
     # Returns a dict that represents the protobuf message
     # Operation is NOT returned in the dict
@@ -147,5 +164,5 @@ class DatabaseOperation:
             ownership=protobuf_dict.get("ownership"),
             imsi=protobuf_dict.get("imsi"),
             security=json.dumps(protobuf_dict.get("security")),  # Security is a nested dict
-            update_data=json.dumps(protobuf_dict.get("update_data"))
+            update_data=json.dumps(protobuf_dict.get("update_data"))  # Only used for update messages
         )

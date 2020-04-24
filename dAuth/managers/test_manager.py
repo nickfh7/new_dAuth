@@ -52,7 +52,7 @@ class TestDatabaseManager(DatabaseManagerInterface):
         self.log("Executing operation")
         op_type = copy.copy(operation.operation())
         key = copy.copy(operation.key())
-        value = copy.deepcopy(operation.to_dict())
+        value = copy.deepcopy(operation.get_data())
         success = False
 
         if op_type is 'i':

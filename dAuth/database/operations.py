@@ -10,12 +10,12 @@ from dAuth.proto.database import DatabaseOperation
 class MongoDBOperations:
     @staticmethod
     def insert(collection:Collection, operation:DatabaseOperation):
-        collection.insert_one(operation.to_dict())
+        collection.insert_one(operation.get_data())
 
 
     @staticmethod
     def update(collection:Collection, operation:DatabaseOperation):
-        collection.update_one(operation.get_filter(), operation.get_update_data())
+        collection.update_one(operation.get_filter(), operation.get_data())
 
 
     @staticmethod

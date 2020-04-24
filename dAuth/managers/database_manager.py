@@ -57,7 +57,7 @@ class DatabaseManager(DatabaseManagerInterface):
 
         elif operation.is_update():
             # Add to pending updates
-            self.trigger_handler.add_pending_update(operation.key(), operation.ownership(), operation.get_update_data())
+            self.trigger_handler.add_pending_update(operation.key(), operation.ownership(), operation.get_data())
 
             self.log(" Doing update operation with key: " + str(operation.key()))
             MongoDBOperations.update(self.collection, operation)

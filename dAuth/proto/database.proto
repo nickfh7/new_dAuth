@@ -19,3 +19,14 @@ message DatabaseData {
     // For update only
     string update_data = 7;
 }
+
+// Used for testing / comparison
+message OldDatabaseData {
+    enum Operation {
+        INSERT = 0;
+        DELETE = 1;
+        UPDATE = 2;
+    }
+    Operation operation = 1;
+    string hex_encoded_object = 2;
+}

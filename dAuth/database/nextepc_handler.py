@@ -79,7 +79,7 @@ class NextEPCHandler:
             ownership, data = self.pending_updates[operation.key()]
 
             # Check for exact match of update data
-            if data == operation.get_update_data():
+            if data == operation.get_data():
                 operation.set_ownership(ownership)
                 operation.set_remote(True)
                 del self.pending_updates[operation.key()]
