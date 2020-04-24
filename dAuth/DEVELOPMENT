@@ -1,19 +1,46 @@
-The top level module is CCellular, which 
-Each manager provides a service (for example, network manager)
+The top level module is CCellular, which manages all other managers
+Each manager provides an entryway to and management of some package/service/subsystem
 
 This division is to allow the different parts of dAuth to be developed and managed independently
 If a new implementation of a given service is to be used (swapping out the DB, for instance), 
 the hope is that the manager (or at least its interface) should remain the same to prevent any
-need for changing the other managers.
+need for changing the other managers or functionality.
 
-The main components are as follows:
+Most major components are contained within their own sub-package, with the exception of the managers.
+
+
+High level overview:
+
+
+-- Main Packages --
 
 CCellular (the central manager)
-- maintains the managers in the system, and controls basics functions like start, stop, and logging.
+  - maintains the managers in the system, and controls basics functions like start, stop, and logging.
 
-Managers:
-- Database Manager: Any database functionality is provided by this manager. This includes operations and triggers.
+Proto:
+  - .protos files: specifies the messages that are used, see protobuf documentation
+  - DatabaseOperation: A wrapper class that is designed to abstract building and getting from database protobuf messages
 
-- Network Manager: Provides network services (such as logging) and allows for message prioritizations
+Database:
+  - Database Manager: Handles any database functionality for the dAuth system, such as triggers and executing.
+  - NextEPCHandler: Manages the triggers and sorts local and remote operations.
+  - Operations: Handles the actual database operations, when provided with a DatabaseOperation
+  - Operations_cli: Command line utility for interating with Operations
 
-- Distributed Manager: Provides consensus amoung other nodes
+Distributed Manager:
+  - Provides consensus amoung other nodes
+
+Network:
+  - Network Manager: Provides network services (such as logging) and allows for message prioritizations between services
+  - For more details, read through the separate documentation under the network package
+
+
+
+-- Other useful components --
+
+Config:
+  - Config classes should be created for every manager
+  - Defaults are defined in the the class, but can be overwritten in a created instance
+
+Parser:
+  - Used to make changes to the config instances before running the main program

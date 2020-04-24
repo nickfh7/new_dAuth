@@ -15,7 +15,17 @@ Set up dAuth
 
 
 Set up Database
-<TODO>
+1. create a new directory for the database (i.e. 'data/), and create two subdirectories 'db/' and 'replica/'
+2. Set up the db and replica with the following commands (run every time you start the dbs):
+   mongod --dbpath db/ --replSet rs0                    # main db
+   mongod --dbpath replica/ --port 27018 --replSet rs0  # replica
+3. Initialize the setup (ONLY THE FIRST TIME):
+   mongo   # start mongo client
+   > rs.initiate()
+   > rs.add("localhost:27018")
+   > rs.status()
+   > rs.conf()     # To check for configuration
+   > rs.slaveOk()  # To ensure that the slave / replica nodes can be enabled for read
 
 
 Set up Sawtooth

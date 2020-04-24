@@ -23,7 +23,7 @@ class NextEPCHandler:
         self.triggers.register_update_trigger(self._handle_update, db_name=db_name, collection_name=collection_name)
         self.triggers.register_delete_trigger(self._handle_delete, db_name=db_name, collection_name=collection_name)
 
-        # These are used because ownership and remote cannot be determined via triggers
+        # These are used because ownership and remote cannot be determined via triggers for updates and deletes
         self.pending_updates = {}
         self.pending_deletes = {}
 
