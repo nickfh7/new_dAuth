@@ -23,6 +23,10 @@ class NextEPCHandler:
         self.triggers.register_update_trigger(self._handle_update, db_name=db_name, collection_name=collection_name)
         self.triggers.register_delete_trigger(self._handle_delete, db_name=db_name, collection_name=collection_name)
 
+        # These are used because ownership and remote cannot be determined via triggers
+        self.pending_updates = {}
+        self.pending_deletes = {}
+
 
     # Start watching for new operations
     def start_triggers(self):
@@ -35,8 +39,29 @@ class NextEPCHandler:
         self.triggers.stop_tail()
 
 
+    # Add the key and owner of a pending delete from remote origin
+    def add_pending_update(self, key, ownership, update_data:str):
+        if key in self.pending_updates:
+            found_owner, found_data = self.pending_updates[key]
+
+            # Check for existing pending updates
+            if ownership is found_owner and update_data is found_data:
+                self.log("!!! An existing pending update is pending again")
+            else:
+                self.log("!!! New update for the same key is pending")
+
+        self.pending_updates[key] = ownership, update_data
+
+    # Add the key and owner of a pending delete from remote origin
+    def add_pending_delete(self, key, ownership):
+        if key in self.pending_deletes:
+            self.log("!!! An existing pending delete is pending again, from same owner: " + str(self.pending_deletes[key] is ownership))
+
+        self.pending_deletes[key] = ownership
+
+
     # --- Trigger functions ---
-    # Build operation based on op type, pass up to manager if not remote
+    # Build operation based on op type, called by mongo triggers
     def _handle_insert(self, op_document):
         self.log("Triggered on insert: " + str(op_document))
 
@@ -47,12 +72,32 @@ class NextEPCHandler:
         self.log("Triggered on update: " + str(op_document))
 
         operation = DatabaseOperation(protobuf_data=op_document, op_type=DatabaseOperation.UPDATE)
+
+        # See if this was a pending remote update, set ownership as necessary
+        if operation.key() in self.pending_updates:
+
+            ownership, data = self.pending_updates[operation.key()]
+
+            # Check for exact match of update data
+            if data == operation.get_update_data():
+                operation.set_ownership(ownership)
+                operation.set_remote(True)
+                del self.pending_updates[operation.key()]
+
         self._handle_operation(operation)
 
     def _handle_delete(self, op_document):
         self.log("Triggered on delete: " + str(op_document))
     
         operation = DatabaseOperation(protobuf_data=op_document, op_type=DatabaseOperation.DELETE)
+    
+        # See if this was a pending remote delete, set ownership as necessary
+        if operation.key() in self.pending_deletes:
+            ownership = self.pending_deletes[operation.key()]
+            operation.set_ownership(ownership)
+            operation.set_remote(True)
+            del self.pending_deletes[operation.key()]
+
         self._handle_operation(operation)
 
     # Called by all triggers, determines if operation should be propagated

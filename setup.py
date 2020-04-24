@@ -6,10 +6,9 @@ if __name__ == '__main__':
         version="0.1",
         packages=find_packages(),
         install_requires=[
-            'protobuf',
             'pymongo',
             'mongotriggers',
-            "protobuf",
+            'protobuf',
             "grpcio",
         ],
         entry_points={

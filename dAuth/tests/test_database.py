@@ -138,8 +138,8 @@ def test_db_multi_node(num_nodes=3):
         assert res2 is not None and res2['imsi'] is "1"
 
     # Update the data
-    db.database_update("test_key_1", {"imsi": "2"})
-    db.database_update("test_key_2", {"imsi": "3"})
+    main_db.database_update("test_key_1", {"imsi": "2"})
+    main_db.database_update("test_key_2", {"imsi": "3"})
 
     time.sleep(2)
 
@@ -150,8 +150,8 @@ def test_db_multi_node(num_nodes=3):
         assert res2 is not None and res2['imsi'] is "3"
 
     # Delete the data
-    db.database_delete("test_key_1")
-    db.database_delete("test_key_2")
+    main_db.database_delete("test_key_1")
+    main_db.database_delete("test_key_2")
 
     time.sleep(2)
 

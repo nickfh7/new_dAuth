@@ -1,8 +1,8 @@
-from dAuth.tests import database_tests
+from dAuth.tests import test_database
 
 
 def main():
-    database_tests.run_tests()
+    test_database.run_tests()
     
 
 if __name__ == "__main__":

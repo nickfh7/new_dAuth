@@ -1,5 +1,9 @@
 Major areas to work on:
 
+> Database Manager Issues:
+  - Update and delete triggers do not have remote and ownership data, creates issue with propagation
+  -- Fix that uses dicts with pending info has been used, works for now
+
 > Add distributed manager:
   - Again, a lot of the work should be done
   - Figure out the transaction processor, how it work, what to give it
