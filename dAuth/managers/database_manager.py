@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from pymongo.errors import PyMongoError
 
 from dAuth.managers.interface import DatabaseManagerInterface
 from dAuth.proto.database import DatabaseOperation
@@ -51,27 +52,30 @@ class DatabaseManager(DatabaseManagerInterface):
 
         self.log("Executing operation from " + str(operation.ownership()))
 
-        if operation.is_insert():
-            self.log(" Doing insert operation with key: " + str(operation.key()))
+        try:
+            if operation.is_insert():
+                self.log(" Doing insert operation with key: " + str(operation.key()))
 
-            MongoDBOperations.insert(self.collection, operation)
+                MongoDBOperations.insert(self.collection, operation)
 
-        elif operation.is_update():
-            # Add to pending updates
-            self.trigger_handler.add_pending_update(operation)
+            elif operation.is_update():
+                # Add to pending updates
+                self.trigger_handler.add_pending_update(operation)
 
-            self.log(" Doing update operation with key: " + str(operation.key()))
-            MongoDBOperations.update(self.collection, operation)
+                self.log(" Doing update operation with key: " + str(operation.key()))
+                MongoDBOperations.update(self.collection, operation)
 
-        elif operation.is_delete():
-            # Add to pending deletes
-            self.trigger_handler.add_pending_delete(operation)
+            elif operation.is_delete():
+                # Add to pending deletes
+                self.trigger_handler.add_pending_delete(operation)
 
-            self.log(" Doing delete operation with key: " + str(operation.key()))
-            MongoDBOperations.delete(self.collection, operation)
+                self.log(" Doing delete operation with key: " + str(operation.key()))
+                MongoDBOperations.delete(self.collection, operation)
 
-        else:
-            self.log(" Bad operation type: " + str(operation.operation()))
+            else:
+                self.log(" Bad operation type: " + str(operation.operation()))
+        except PyMongoError as e:
+            self.log(" Error during operation: " + str(e))
 
     # Propagate an operation out via the distributed manager
     def new_local_operation(self, operation:DatabaseOperation):

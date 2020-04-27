@@ -13,6 +13,8 @@ class CCellularConfig:
     ID = None
     OUTPUT_DIR = "./output"
 
+    LOGGING_ENABLED = True
+
 
 class NetworkManagerConfig:
     NAME = "Network Manager"

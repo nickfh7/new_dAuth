@@ -15,6 +15,7 @@ from dAuth.proto.database_pb2 import DatabaseData, OldDatabaseData
 
 # Represents a generic database operation
 # Contains the protobuf message with the relevant data
+# Processes trigger data depending on transaction type
 class DatabaseOperation:
     # Constants for operation type
     INSERT = DatabaseData.INSERT

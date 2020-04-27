@@ -8,6 +8,8 @@ from dAuth.utils import random_string
 # It starts and facilitates all other managers
 class CCellular:
     def __init__(self, config, logging_active=True):
+        self.conf = config
+
         self.id = config.ID or random_string()  # generate random id if one is not configured
 
         # a mapping of manager names to managers
@@ -92,10 +94,11 @@ class CCellular:
 
     # Sends message to local and/or remote logger
     def _double_log(self, category, message):
-        if self.local_logger:
-            self.local_logger("<{0}> {1}".format(category, message))
-        if self.remote_logger:
-            self.remote_logger(category, message)
+        if self.conf.LOGGING_ENABLED:
+            if self.local_logger:
+                self.local_logger("<{0}> {1}".format(category, message))
+            if self.remote_logger:
+                self.remote_logger(category, message)
 
     # Debug logging function, simply prints
     @staticmethod
