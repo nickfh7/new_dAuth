@@ -53,18 +53,19 @@ class DatabaseManager(DatabaseManagerInterface):
 
         if operation.is_insert():
             self.log(" Doing insert operation with key: " + str(operation.key()))
+
             MongoDBOperations.insert(self.collection, operation)
 
         elif operation.is_update():
             # Add to pending updates
-            self.trigger_handler.add_pending_update(operation.key(), operation.ownership(), operation.get_data())
+            self.trigger_handler.add_pending_update(operation)
 
             self.log(" Doing update operation with key: " + str(operation.key()))
             MongoDBOperations.update(self.collection, operation)
 
         elif operation.is_delete():
             # Add to pending deletes
-            self.trigger_handler.add_pending_delete(operation.key(), operation.ownership())
+            self.trigger_handler.add_pending_delete(operation)
 
             self.log(" Doing delete operation with key: " + str(operation.key()))
             MongoDBOperations.delete(self.collection, operation)
@@ -74,7 +75,16 @@ class DatabaseManager(DatabaseManagerInterface):
 
     # Propagate an operation out via the distributed manager
     def new_local_operation(self, operation:DatabaseOperation):
-        self.log("New local operation, sending to distributed manager")
+        self.log("New local operation ({}), sending to distributed manager"\
+            .format("insert" if operation.is_insert() else\
+                    "update" if operation.is_update() else\
+                    "delete"))
+
+        # Log a size comparison with the old message size
+        if operation.old_op:
+            self.log(" Size comparison in bytes (new/old): {0}/{1}, old is {2:.3f}x larger"\
+                .format(str(operation.size()), str(operation.old_op.ByteSize()), operation.old_op.ByteSize() / operation.size()))
+
         if self.distributed_manager:
             self.distributed_manager.propagate_operation(operation)
         else:

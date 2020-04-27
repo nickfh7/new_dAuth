@@ -1,6 +1,7 @@
 from mongotriggers import MongoTrigger
 
 from dAuth.proto.database import DatabaseOperation
+from dAuth.proto.database_pb2 import OldDatabaseData
 
 # Creates triggers on a mongo database and reports any new operations
 class NextEPCHandler:
@@ -39,25 +40,26 @@ class NextEPCHandler:
         self.triggers.stop_tail()
 
 
-    # Add the key and owner of a pending delete from remote origin
-    def add_pending_update(self, key, ownership, update_data:str):
-        if key in self.pending_updates:
-            found_owner, found_data = self.pending_updates[key]
+    # Add the key, owner, and update data of a pending delete from remote origin
+    def add_pending_update(self, operation:DatabaseOperation):
+        if operation.key() in self.pending_updates:
+            found_owner, found_data = self.pending_updates[operation.key()]
 
             # Check for existing pending updates
-            if ownership is found_owner and update_data is found_data:
+            if operation.ownership() is found_owner and operation.get_data() is found_data:
                 self.log("!!! An existing pending update is pending again")
             else:
                 self.log("!!! New update for the same key is pending")
 
-        self.pending_updates[key] = ownership, update_data
+        self.pending_updates[operation.key()] = operation.ownership(), operation.get_data()
 
     # Add the key and owner of a pending delete from remote origin
-    def add_pending_delete(self, key, ownership):
-        if key in self.pending_deletes:
-            self.log("!!! An existing pending delete is pending again, from same owner: " + str(self.pending_deletes[key] is ownership))
+    def add_pending_delete(self, operation:DatabaseOperation):
+        if operation.key() in self.pending_deletes:
+            self.log("!!! An existing pending delete is pending again, from same owner: " +\
+                 str(self.pending_deletes[operation.key()] is operation.ownership()))
 
-        self.pending_deletes[key] = ownership
+        self.pending_deletes[operation.key()] = operation.ownership()
 
 
     # --- Trigger functions ---
@@ -66,6 +68,7 @@ class NextEPCHandler:
         self.log("Triggered on insert: " + str(op_document))
 
         operation = DatabaseOperation(protobuf_data=op_document, op_type=DatabaseOperation.INSERT)
+
         self._handle_operation(operation)
         
     def _handle_update(self, op_document):

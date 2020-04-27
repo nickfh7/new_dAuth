@@ -15,3 +15,6 @@ Major areas to work on:
   - As a start, make a basic framework test with the test managers
   - Tests for each manager separately would be good too
   - Finally, some way of testing the entire system
+
+> Random Ideas:
+  - create a multi-node test setup that runs indefinitely

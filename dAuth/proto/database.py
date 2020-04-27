@@ -1,6 +1,7 @@
 import json
+from bson import json_util
 
-from dAuth.proto.database_pb2 import DatabaseData
+from dAuth.proto.database_pb2 import DatabaseData, OldDatabaseData
 
 # This file contains wrappers for proto messages
 # Wrappers are designed to:
@@ -24,6 +25,8 @@ class DatabaseOperation:
     # Op_type must be specified with a dict
     # Op_code is used for testing (specifically the simulated distributed system)
     def __init__(self, protobuf_data, op_type=None, op_id=None):
+        self.old_op = None
+
         # if the type is an op document (dict), build based on data and op type
         if type(protobuf_data) is dict:
             # check the op type is valid
@@ -53,6 +56,9 @@ class DatabaseOperation:
                 
             # build protobuf message from data
             self.protobuf_message = self.dict_to_protobuf(data, op_type)
+
+            # used for comparison of size
+            self._build_old_operation(protobuf_data)
 
 
         # can also build from a protomessage
@@ -87,7 +93,7 @@ class DatabaseOperation:
 
     # Returns the size of the protobuf message
     def size(self):
-        return self.protobuf_message.s
+        return self.protobuf_message.ByteSize()
 
 
     # Operation types
@@ -139,6 +145,20 @@ class DatabaseOperation:
         # deletes don't have/need data
         if self.is_delete():
             return None
+
+
+    # Used for size comparisons
+    def _build_old_operation(self, op_document):
+        if self.is_insert():
+            hex_obj = json_util.dumps(op_document['o']).encode().hex()
+            self.old_op = OldDatabaseData(hex_encoded_object=hex_obj, operation=OldDatabaseData.Operation.INSERT)
+
+        elif self.is_update():
+            hex_obj = json_util.dumps(op_document).encode().hex()
+            self.old_op = OldDatabaseData(hex_encoded_object=hex_obj, operation=OldDatabaseData.Operation.UPDATE)
+
+        else:
+            self.old_op = None
 
 
     # Returns a dict that represents the protobuf message
