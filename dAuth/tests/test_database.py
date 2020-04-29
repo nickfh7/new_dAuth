@@ -40,15 +40,15 @@ def test_db_single_node():
     db.database_insert("test_key_1", {"imsi": "1"})
     db.database_insert("test_key_2", {"imsi": "1"})
 
-    assert db.database_get("test_key_1")['imsi'] is "1"
-    assert db.database_get("test_key_2")['imsi'] is "1"
+    assert db.database_get("test_key_1")['imsi'] == "1"
+    assert db.database_get("test_key_2")['imsi'] == "1"
 
     # Update the data
     db.database_update("test_key_1", {"imsi": "2"})
     db.database_update("test_key_2", {"imsi": "3"})
 
-    assert db.database_get("test_key_1")['imsi'] is "2"
-    assert db.database_get("test_key_2")['imsi'] is "3"
+    assert db.database_get("test_key_1")['imsi'] == "2"
+    assert db.database_get("test_key_2")['imsi'] == "3"
 
     # Delete the data
     db.database_delete("test_key_1")
@@ -125,8 +125,8 @@ def test_db_multi_node(num_nodes=3):
     for db in dbs:
         res1 = db.database_get("test_key_1")
         res2 = db.database_get("test_key_2")
-        assert res1 is not None and res1['imsi'] is "1"
-        assert res2 is not None and res2['imsi'] is "1"
+        assert res1 is not None and res1['imsi'] == "1"
+        assert res2 is not None and res2['imsi'] == "1"
 
     # Update the data
     main_db.database_update("test_key_1", {"imsi": "2"})
@@ -137,8 +137,8 @@ def test_db_multi_node(num_nodes=3):
     for db in dbs:
         res1 = db.database_get("test_key_1")
         res2 = db.database_get("test_key_2")
-        assert res1 is not None and res1['imsi'] is "2"
-        assert res2 is not None and res2['imsi'] is "3"
+        assert res1 is not None and res1['imsi'] == "2"
+        assert res2 is not None and res2['imsi'] == "3"
 
     # Delete the data
     main_db.database_delete("test_key_1")
@@ -242,6 +242,6 @@ def test_db_propagation_performance(duration=5):
 
 def run_tests():
     # test_db_single_node()
-    # test_db_multi_node()
-    test_db_propagation_performance()
+    test_db_multi_node()
+    # test_db_propagation_performance()
 

@@ -46,7 +46,7 @@ class NextEPCHandler:
             found_owner, found_data = self.pending_updates[operation.key()]
 
             # Check for existing pending updates
-            if operation.ownership() is found_owner and operation.get_data() is found_data:
+            if operation.ownership() == found_owner and operation.get_data() == found_data:
                 self.log("!!! An existing pending update is pending again")
             else:
                 self.log("!!! New update for the same key is pending")

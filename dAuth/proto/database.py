@@ -39,11 +39,11 @@ class DatabaseOperation:
             data = {}
 
             # use all data for an insert message
-            if op_type is self.INSERT:
+            if op_type == self.INSERT:
                 data = protobuf_data['o']
 
             # use _id and insert values for update
-            elif op_type is self.UPDATE:
+            elif op_type == self.UPDATE:
                 data["_id"] = protobuf_data['o2']["_id"]
                 data["update_data"] = protobuf_data["o"]
 
@@ -52,7 +52,7 @@ class DatabaseOperation:
                     del data["update_data"]["$v"]
 
             # use only _id for delete
-            elif op_type is self.DELETE:
+            elif op_type == self.DELETE:
                 data["_id"] = protobuf_data["o"]["_id"]
                 
             # build protobuf message from data
@@ -63,7 +63,7 @@ class DatabaseOperation:
 
 
         # can also build from a protomessage
-        elif type(protobuf_data) is DatabaseData:
+        elif type(protobuf_data) == DatabaseData:
             self.protobuf_message = protobuf_data
         
         else:
@@ -99,23 +99,23 @@ class DatabaseOperation:
 
     # Operation types
     def is_insert(self):
-        return self.operation() is self.INSERT
+        return self.operation() == self.INSERT
 
     def is_update(self):
-        return self.operation() is self.UPDATE
+        return self.operation() == self.UPDATE
 
     def is_delete(self):
-        return self.operation() is self.DELETE
+        return self.operation() == self.DELETE
 
 
     # Set attributes
     def set_remote(self, remote):
-        if remote is None:
+        if remote == None:
             raise ValueError("remote value must not be None")
         self.protobuf_message.remote = remote
 
     def set_ownership(self, ownership):
-        if ownership is None:
+        if ownership == None:
             raise ValueError("ownership value must not be None")
         self.protobuf_message.ownership = ownership
 

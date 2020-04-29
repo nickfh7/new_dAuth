@@ -55,21 +55,21 @@ class TestDatabaseManager(DatabaseManagerInterface):
         value = copy.deepcopy(operation.get_data())
         success = False
 
-        if op_type is 'i':
+        if op_type == 'i':
             self.log(" Doing insert operation on " + key)
             if key not in self._database:
                 self._database[key] = value
                 success = True
             else:
                 self.log("  Key already exists, ignoring")
-        elif op_type is 'u':
+        elif op_type == 'u':
             self.log(" Doing update operation on " + key)
             if key in self._database:
                 self._database[key] = value
                 success = True
             else:
                 self.log("  Key doesn't exist, ignoring")
-        elif op_type is 'd':
+        elif op_type == 'd':
             self.log(" Doing delete operation on " + key)
             if key in self._database:
                 del self._database[key]
