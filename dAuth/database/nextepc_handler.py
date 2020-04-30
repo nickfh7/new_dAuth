@@ -57,7 +57,7 @@ class NextEPCHandler:
     def add_pending_delete(self, operation:DatabaseOperation):
         if operation.key() in self.pending_deletes:
             self.log("!!! An existing pending delete is pending again, from same owner: " +\
-                 str(self.pending_deletes[operation.key()] is operation.ownership()))
+                 str(self.pending_deletes[operation.key()] == operation.ownership()))
 
         self.pending_deletes[operation.key()] = operation.ownership()
 

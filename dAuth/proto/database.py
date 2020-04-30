@@ -19,7 +19,7 @@ class DatabaseOperation:
     UPDATE = DatabaseData.UPDATE
     DELETE = DatabaseData.DELETE
 
-    # Can be constructed with a message or a dict or a serialized string
+    # Can be constructed with a message or a dict or a serialized string (bytes)
     # Op_type must be specified with a dict
     # Op_id is used for testing (specifically the simulated distributed system)
     def __init__(self, protobuf_data, op_type=None, op_id=None):
@@ -59,7 +59,7 @@ class DatabaseOperation:
             self._build_old_operation(protobuf_data)
 
         # can also build from serialized string of a protobuf message
-        elif type(protobuf_data) is str:
+        elif type(protobuf_data) is bytes:
             self.protobuf_message = DatabaseData()
             self.protobuf_message.ParseFromString(protobuf_data)
 
@@ -68,7 +68,7 @@ class DatabaseOperation:
             self.protobuf_message = protobuf_data
         
         else:
-            raise ValueError("protobuf data is invalid")
+            raise ValueError("protobuf data is invalid type - " + str(type(protobuf_data)))
 
         # Used for debugging / testing
         self.op_id = op_id

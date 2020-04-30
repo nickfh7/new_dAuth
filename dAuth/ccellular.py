@@ -29,8 +29,6 @@ class CCellular:
         
         self.remote_logger = None
 
-        self.run_function = conf.RUN_FUNCTION
-
         # internal
         self._running = False
         self.log("CCellular is running with ID: " + self.id)
@@ -48,8 +46,9 @@ class CCellular:
                     self.log(' Failed to start: ' + manager.name + " - " + str(e))
 
             # If a run function has been specified, use it
-            if self.run_function is not None:
-                self.run_function()
+            if self.conf.RUN_FUNCTION is not None:
+                self.log("Starting run function")
+                self.conf.RUN_FUNCTION()
         else:
             self.log(" Already running")
 

@@ -30,8 +30,8 @@ def main():
     cc.add_manager(dbm)
 
     # # Add distributed manager
-    # dstm = TestDistributedManager(dstm_config)
-    # cc.add_manager(dstm)
+    dstm = TestDistributedManager(dstm_config)
+    cc.add_manager(dstm)
 
     # Start running CCellular
     print("Starting dAuth")

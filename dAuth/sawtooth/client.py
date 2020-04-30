@@ -21,7 +21,6 @@ from dAuth.config import DistributedManagerConfig
 from dAuth.proto.database import DatabaseOperation
 
 
-
 # Handles the creation of transactions for locally originating messages
 class CCellularClient:
     def __init__(self, conf: DistributedManagerConfig):
@@ -44,13 +43,17 @@ class CCellularClient:
 
             self._signer = CryptoFactory(create_context('secp256k1')).new_signer(private_key)
 
+        self.logger = None
+
 
     # Creates a transaction and sends to sawtooth validator
     def set_operation(self, operation:DatabaseOperation):
+        self.log("Set operation called")
         self._send_transaction('set', operation)
 
     # Gets data 
     def get(self, key):
+        self.log("Get operation called with key: " + str(key))
         address = make_ccellular_address(key)
         result = self._send_request("state/{}".format(address), name=key)
         try:
@@ -73,7 +76,7 @@ class CCellularClient:
         header = TransactionHeader(
             signer_public_key=self._signer.get_public_key().as_hex(),
             family_name=self.conf.FAMILY_NAME,
-            family_version=self.conf.FAMIkeyLY_VERSION,
+            family_version=self.conf.FAMILY_VERSION,
             inputs=[address],
             outputs=[address],
             dependencies=[],
@@ -145,3 +148,7 @@ class CCellularClient:
             raise Exception("Failed {}".format(err))
 
         return result.text
+
+    def log(self, message):
+        if self.logger:
+            self.logger("(Client) " + message)

@@ -57,8 +57,8 @@ class DistributedManagerConfig:
     VALIDATOR_URL = 'tcp://localhost:4004'
 
 
-    CLIENT_URL = 'http://192.168.99.101:8008'
-    CLIENT_KEY_PATH = '~/.sawtooth/keys/' + getpass.getuser() + '.priv'
+    CLIENT_URL = 'localhost:8008'
+    CLIENT_KEY_PATH = "/home/" + getpass.getuser() + "/.sawtooth/keys/" + getpass.getuser() + ".priv"
 
     # SHOULD NOT BE CHANGED AT RUNTIME
     FAMILY_NAME = 'ccellular'
