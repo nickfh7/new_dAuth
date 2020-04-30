@@ -28,7 +28,9 @@ Database:
   - Operations_cli: Command line utility for interating with Operations
 
 Distributed Manager:
-  - Provides consensus amoung other nodes
+  - CCellularClient: Creates transactions that are sent to the sawtooth validator (deals with local operations)
+  - CCellularHandler: Handles new transactions from the sawtooth validator (deals with remote operations)
+  - transactions: Contains a variety of useful transaction-related functions
 
 Network:
   - Network Manager: Provides network services (such as logging) and allows for message prioritizations between services

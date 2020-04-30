@@ -7,20 +7,20 @@ from dAuth.utils import random_string
 # CCellular is the central manager of dAuth
 # It starts and facilitates all other managers
 class CCellular:
-    def __init__(self, config, logging_active=True):
-        self.conf = config
+    def __init__(self, conf:CCellularConfig):
+        self.conf = conf
 
-        self.id = config.ID or random_string()  # generate random id if one is not configured
+        self.id = conf.ID or random_string()  # generate random id if one is not configured
 
         # a mapping of manager names to managers
         self.managers = {}
 
         # logging
-        if logging_active:
+        if conf.LOGGING_ENABLED:
             logger = logging.getLogger("ccellular-" + self.id)
             logger.setLevel(logging.DEBUG)
-            os.makedirs(config.OUTPUT_DIR, exist_ok=True)
-            fh = logging.FileHandler(os.path.join(config.OUTPUT_DIR, "ccellular.log"))
+            os.makedirs(conf.OUTPUT_DIR, exist_ok=True)
+            fh = logging.FileHandler(os.path.join(conf.OUTPUT_DIR, "ccellular.log"))
             fh.setLevel(logging.DEBUG)
             logger.addHandler(fh)
             self.local_logger = logger.debug
@@ -28,6 +28,8 @@ class CCellular:
             self.local_logger = None
         
         self.remote_logger = None
+
+        self.run_function = conf.RUN_FUNCTION
 
         # internal
         self._running = False
@@ -44,6 +46,10 @@ class CCellular:
                     manager.start()
                 except Exception as e:
                     self.log(' Failed to start: ' + manager.name + " - " + str(e))
+
+            # If a run function has been specified, use it
+            if self.run_function is not None:
+                self.run_function()
         else:
             self.log(" Already running")
 

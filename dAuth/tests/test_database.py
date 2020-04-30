@@ -21,7 +21,7 @@ def test_db_single_node():
     dst_conf = DistributedManagerConfig()
 
     # Set appropriate configurations
-    cc_conf.OUTPUT_DIR = "./output/tests/db_single_node"
+    cc_conf.OUTPUT_DIR = "./output/tests/database/db_single_node"
 
     db_conf.DATABASE_NAME = "testing_db"
     db_conf.COLLECTION_NAME = "single_node_test"
@@ -80,7 +80,7 @@ def test_db_multi_node(num_nodes=3):
         dst_conf = DistributedManagerConfig()
 
         # Set appropriate configurations
-        cc_conf.OUTPUT_DIR = "./output/tests/db_multi_node_" + str(i)
+        cc_conf.OUTPUT_DIR = "./output/tests/database/db_multi_node_" + str(i)
 
         db_conf.DATABASE_NAME = "testing_db"
         db_conf.COLLECTION_NAME = "multi_node_test_" + str(i)
@@ -174,7 +174,7 @@ def test_db_propagation_performance(duration=5):
         dst_conf = DistributedManagerConfig()
 
         # Set appropriate configurations
-        cc_conf.OUTPUT_DIR = "./output/tests/db_propagation_performance_" + str(i)
+        cc_conf.OUTPUT_DIR = "./output/tests/database/db_propagation_performance_" + str(i)
         cc_conf.LOGGING_ENABLED = False
 
         db_conf.DATABASE_NAME = "testing_db"

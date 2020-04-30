@@ -24,6 +24,12 @@ class ManagerInterface:
         self._running = False
 
 
+    # Used by the central manager if the main thread of execution should 
+    # be here while running (i.e. this function blocks)
+    def run_main(self):
+        raise NotImplementedError("This manager does not support run_main")
+
+
     # --- Control functions ---
     # Called by controlling manager at startup
     def start(self):
@@ -118,7 +124,7 @@ class DatabaseManagerInterface(ManagerInterface):
 class DistributedManagerInterface(ManagerInterface):
     name = DistributedManagerConfig.NAME
 
-    def __init__(self, conf):
+    def __init__(self, conf:DistributedManagerConfig):
         super().__init__(conf)
 
     # Required function for propagating local operations

@@ -9,9 +9,6 @@ from dAuth.proto.database_pb2 import DatabaseData, OldDatabaseData
 #  - Provide helper functions (i.e. make dict for database)
 #  - Abstract away protobuf fields
 
-# TODO: Restructure protobuf message?
-#  -- Could create generic data field, would make more generalized
-
 
 # Represents a generic database operation
 # Contains the protobuf message with the relevant data
@@ -22,9 +19,9 @@ class DatabaseOperation:
     UPDATE = DatabaseData.UPDATE
     DELETE = DatabaseData.DELETE
 
-    # Can be constructed with a message or a dict
+    # Can be constructed with a message or a dict or a serialized string
     # Op_type must be specified with a dict
-    # Op_code is used for testing (specifically the simulated distributed system)
+    # Op_id is used for testing (specifically the simulated distributed system)
     def __init__(self, protobuf_data, op_type=None, op_id=None):
         self.old_op = None
 
@@ -61,9 +58,13 @@ class DatabaseOperation:
             # used for comparison of size
             self._build_old_operation(protobuf_data)
 
+        # can also build from serialized string of a protobuf message
+        elif type(protobuf_data) is str:
+            self.protobuf_message = DatabaseData()
+            self.protobuf_message.ParseFromString(protobuf_data)
 
-        # can also build from a protomessage
-        elif type(protobuf_data) == DatabaseData:
+        # can also build directly from a protomessage
+        elif type(protobuf_data) is DatabaseData:
             self.protobuf_message = protobuf_data
         
         else:
@@ -147,6 +148,9 @@ class DatabaseOperation:
         if self.is_delete():
             return None
 
+    # Returns a serialized dict with payload info (for distributed)
+    def get_serialized_message(self):
+        return self.protobuf_message.SerializeToString()
 
     # Used for size comparisons
     def _build_old_operation(self, op_document):

@@ -1,3 +1,5 @@
+import getpass
+
 # This file contains global configuration objects
 # Default values should be set here
 # In the main file, an instance of each of these should be made 
@@ -14,6 +16,9 @@ class CCellularConfig:
     OUTPUT_DIR = "./output"
 
     LOGGING_ENABLED = True
+
+    # This is the funciton to call after completing startup
+    RUN_FUNCTION = None
 
 
 class NetworkManagerConfig:
@@ -47,6 +52,19 @@ class DistributedManagerConfig:
     NAME = "Distributed Manager"
 
     DATABASE_MANAGER_NAME = DatabaseManagerConfig.NAME
+
+    BINARY_NAME = 'ccellular'
+    BINARY_VERSION = '1.0'
+    DISTRIBUTION_NAME = 'sawtooth-ccellular'
+    VALIDATOR_URL = 'tcp://localhost:4004'
+
+
+    CLIENT_URL = 'http://192.168.99.101:8008'
+    CLIENT_KEY_PATH = '~/.sawtooth/keys/' + getpass.getuser() + '.priv'
+
+    # SHOULD NOT BE CHANGED AT RUNTIME
+    FAMILY_NAME = 'ccellular'
+    FAMILY_VERSION = '1.0'
 
 
 # Hack, sorry

@@ -46,7 +46,7 @@ class DatabaseManager(DatabaseManagerInterface):
 
     # Execute an operation, presumably from another dAuth node
     def execute_operation(self, operation:DatabaseOperation):
-        if operation.ownership() is self.id:
+        if operation.ownership() == self.id:
             self.log("!!! Attempting to re-execute local operation, ignoring")
             return
 
