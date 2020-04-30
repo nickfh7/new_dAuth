@@ -19,12 +19,12 @@ def get_prefix():
     return _sha512(DistributedManagerConfig.FAMILY_NAME.encode('utf-8'))[0:6]
 
 
-def make_ccellular_address(imsi):
-    return get_prefix() + _sha512(imsi.encode('utf-8'))[64:]
+def make_ccellular_address(key):
+    return get_prefix() + _sha512(key.encode('utf-8'))[64:]
 
 
 # Creates and returns a serialized payload
-def build_payload(operation:DatabaseOperation, action):
+def build_payload(action, operation:DatabaseOperation):
     payload = {
         "verb": action,
         "key": operation.key(),

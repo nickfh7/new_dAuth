@@ -53,8 +53,6 @@ class DistributedManagerConfig:
 
     DATABASE_MANAGER_NAME = DatabaseManagerConfig.NAME
 
-    BINARY_NAME = 'ccellular'
-    BINARY_VERSION = '1.0'
     DISTRIBUTION_NAME = 'sawtooth-ccellular'
     VALIDATOR_URL = 'tcp://localhost:4004'
 
