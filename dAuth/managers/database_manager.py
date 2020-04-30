@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
+from pymongo.database import Collection
 
 from dAuth.managers.interface import DatabaseManagerInterface
 from dAuth.proto.database import DatabaseOperation
@@ -15,30 +16,30 @@ from dAuth.database.nextepc_handler import NextEPCHandler
 class DatabaseManager(DatabaseManagerInterface):
     client = None
     database = None
+    collection = None
 
     def __init__(self, conf:DatabaseManagerConfig):
         super().__init__(conf)
 
-    def _start(self):
-        conf = self.conf
-
         # Connect to database
-        self.client = MongoClient(conf.HOST, conf.PORT)
-        self.database = self.client[conf.DATABASE_NAME]
-        self.collection = self.database[conf.COLLECTION_NAME]
+        self.client = MongoClient(self.conf.HOST, self.conf.PORT)
+        self.database = self.client[self.conf.DATABASE_NAME]
+        self.collection = self.database[self.conf.COLLECTION_NAME]
+
+    def _start(self):
         self.log("Connected to database: " + self.conf.DATABASE_NAME)
 
         # Create trigger handler and start triggers
         self.trigger_handler = NextEPCHandler(client=self.client, 
-                                              db_name=conf.DATABASE_NAME,
-                                              collection_name=conf.COLLECTION_NAME, 
+                                              db_name=self.conf.DATABASE_NAME,
+                                              collection_name=self.conf.COLLECTION_NAME, 
                                               ownership=self.id,
                                               trigger_callback=self.new_local_operation,
                                               logger=self.log)
         self.trigger_handler.start_triggers()
 
         # Get the distributed manager
-        self.distributed_manager = self.get_manager(conf.DISTRIBUTED_MANAGER_NAME)
+        self.distributed_manager = self.get_manager(self.conf.DISTRIBUTED_MANAGER_NAME)
 
     def _stop(self):
         self.trigger_handler.stop_triggers()

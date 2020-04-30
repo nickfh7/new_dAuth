@@ -40,14 +40,14 @@ class NextEPCHandler:
         self.triggers.stop_tail()
 
 
-    # Add the key, owner, and update data of a pending delete from remote origin
+    # Add the key, owner, and update data of a pending update from remote origin
     def add_pending_update(self, operation:DatabaseOperation):
         if operation.key() in self.pending_updates:
             found_owner, found_data = self.pending_updates[operation.key()]
 
             # Check for existing pending updates
             if operation.ownership() == found_owner and operation.get_data() == found_data:
-                self.log("!!! An existing pending update is pending again")
+                self.log("!!! An existing pending update from same owner is pending again")
             else:
                 self.log("!!! New update for the same key is pending")
 

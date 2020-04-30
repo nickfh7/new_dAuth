@@ -51,7 +51,7 @@ class DistributedManager(DistributedManagerInterface):
     def new_remote_operation(self, operation: DatabaseOperation):
         if operation.ownership() == self.id:
             self.log("Avoiding replay of operation - " + str(operation.key()) + ", " + str(operation.operation()))
-            return
+            raise ValueError("Replay value")
 
         self.log("New remote operation, passing to Database Manager")
         if self.database_manager:
