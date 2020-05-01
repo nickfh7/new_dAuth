@@ -46,6 +46,8 @@ def multi_node_test():
 
         dst_conf = DistributedManagerConfig()
         dst_conf.VALIDATOR_URL = 'tcp://localhost:' + str(4004 + i)
+        dst_conf.BATCH_SIZE = 20
+        dst_conf.BATCH_TIMEOUT = 5
         dst = DistributedManager(dst_conf)
         cc.add_manager(dst)
 
@@ -69,41 +71,35 @@ def multi_node_test():
         threads.append(t)
 
     start = None
-    num_messages = 500
+    num_messages = 200
+    rate = 0.01
     try:
-
+        
+        # Initialize test
         print("Cleaning previous test data")
         for db in dbms:
             db.collection.delete_many({'imsi': '12345'})
-
         print("Initial state (before operations):")
         for dbm in dbms:
             count = dbm.collection.count()
             print(" total:", count)
         print()
-
         print("Starting nodes")
         for t in threads:
             t.start()
-
         time.sleep(1)
-
         print("Beginning test in 3 seconds")
         time.sleep(3)
 
-
-        total_inserts = 0
-        i = 0
+        # Run test operations
         start = time.time()
-        duration = 5
+        check_time = time.time()
         for i in range(num_messages):
-            # Do insert num_messages times at a rate of ~50/s
             main_db.database_insert("test_key_{0}".format(i), {"imsi": "12345"})
-            i += 1
-            total_inserts += 1
-            time.sleep(0.02)
+            time.sleep(rate)
 
-            if i % 100 == 99:
+            if time.time() - check_time >= 1:
+                check_time = time.time()
                 time_passed = time.time() - start
 
                 # check the current status of the other dbs
@@ -115,6 +111,7 @@ def multi_node_test():
 
         print("operations finished")
 
+        # Wait for propagations to finish
         done = False
         while not done:
             done = True
@@ -132,6 +129,7 @@ def multi_node_test():
         print("Total completion time:", time.time() - start)
         print("Test over, ctrl-c to clean up")
 
+        # May remove this...
         while True:
             time.sleep(1)
 

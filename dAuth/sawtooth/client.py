@@ -4,6 +4,9 @@ import base64
 import yaml
 import json
 import cbor
+import queue
+import threading
+import time
 
 from sawtooth_sdk.protobuf.transaction_pb2 import TransactionHeader
 from sawtooth_sdk.protobuf.transaction_pb2 import Transaction
@@ -26,8 +29,19 @@ class CCellularClient:
     def __init__(self, conf: DistributedManagerConfig):
         self.conf = conf
         self.url = conf.CLIENT_URL
+
+        # Transaction batcher
+        self.transaction_queue = queue.Queue()
+        self.pending_transactions = []
+        self.run_check = None
+        self.transaction_batcher_thread = None
+        self.last_batch_time = 0
+
+        # Get the key from the local machine
         keyfile = conf.CLIENT_KEY_PATH
 
+        # The signer requires a key from the local user/machine
+        # See sawtooth documentation for producing a key
         if keyfile is not None:
             try:
                 with open(keyfile) as fd:
@@ -46,10 +60,21 @@ class CCellularClient:
         self.logger = None
 
 
+    # Spawns a thread that handles the creation of transactions and batching
+    # Run check function is used by the batcher to check if parent module is still running
+    def start_batcher(self, run_check_function):
+        if run_check_function is None:
+            raise ValueError("Run check function must be specified")
+        self.run_check = run_check_function
+
+        self.transaction_batcher_thread = threading.Thread(target=self._transaction_batcher)
+        self.transaction_batcher_thread.start()
+
+
     # Creates a transaction and sends to sawtooth validator
     def set_operation(self, operation:DatabaseOperation):
-        self.log("Set operation called")
-        self._send_transaction('set', operation)
+        self.log("Set operation called, queueing transaction")
+        self.transaction_queue.put(('set', operation))
 
     # Gets data 
     def get(self, key):
@@ -66,6 +91,54 @@ class CCellularClient:
         except BaseException as e:
             print("Received a base exception. " + e)
             return None
+
+
+    # Processes available transactions into batches
+    # Batch size and timeout can be configured
+    def _transaction_batcher(self):
+        self.log("Batcher thread entering")
+
+        while self.run_check():
+            # get any new transactions (up to batch size)
+            while self.transaction_queue.qsize() > 0:
+                action, operation = self.transaction_queue.get()
+                self._send_transaction(action, operation)
+
+                # stop adding new messages if batch size is reached
+                # TODO: possible overloading option?
+                if len(self.pending_transactions) >= self.conf.BATCH_SIZE:
+                    break
+
+            # if there are no transactions, reset the batch timeout
+            if len(self.pending_transactions) == 0:
+                self.last_batch_time = time.time()
+            
+            # check for a new full size batch or a batch timeout
+            elif len(self.pending_transactions) >= self.conf.BATCH_SIZE or\
+                    time.time() - self.last_batch_time >= self.conf.BATCH_TIMEOUT:
+
+                self.log("Creating and sending new batch")
+                if len(self.pending_transactions) >= self.conf.BATCH_SIZE:
+                    self.log(" Batch size reached")
+                else:
+                    self.log(" Batch timeout exceeded, sending with {0}/{1}"\
+                        .format(len(self.pending_transactions), self.conf.BATCH_SIZE))
+
+                # build batch from available transactions, then reset
+                batch_list = self._create_batch_list(self.pending_transactions)
+                self.pending_transactions = []
+
+                # Send new batch (TODO save output?)
+                self._send_request(
+                    "batches", batch_list.SerializeToString(),
+                    'application/octet-stream',
+                )
+
+            # wait a little before checking again (for performance)
+            time.sleep(self.conf.BATCH_CHECK_DELAY)
+
+        self.log("Batcher thread exiting")
+        self.transaction_batcher_thread = None
 
 
     # Internal method for building and sending a transaction
@@ -93,12 +166,8 @@ class CCellularClient:
             header_signature=signature
         )
 
-        batch_list = self._create_batch_list([transaction])
+        self.pending_transactions.append(transaction)
 
-        return self._send_request(
-            "batches", batch_list.SerializeToString(),
-            'application/octet-stream',
-        )
 
     # Creates a transaction batch of one or more transactions
     # All transactions must be included in a batch

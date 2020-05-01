@@ -1,5 +1,3 @@
-
-
 from sawtooth_sdk.processor.core import TransactionProcessor
 
 from dAuth.managers.interface import DistributedManagerInterface
@@ -14,7 +12,7 @@ class DistributedManager(DistributedManagerInterface):
 
         self.conf = conf
         
-        # Set up transaction processort
+        # Set up transaction processor
         self.transaction_processor = TransactionProcessor(url=conf.VALIDATOR_URL)
         self.handler = CCellularHandler(conf)
         self.handler.set_apply_callback(self.new_remote_operation)
@@ -36,10 +34,15 @@ class DistributedManager(DistributedManagerInterface):
         self.transaction_processor.stop()   # make sure to close out connection
 
 
+    # called on startup from central manager
     def _start(self):
-        # get the current database manager
         self.log("Connecting to validator at " + str(self.conf.VALIDATOR_URL))
+
+        # get the current database manager
         self.database_manager = self.get_manager(self.conf.DATABASE_MANAGER_NAME)
+
+        # send a thread to the transaction batcher
+        self.client.start_batcher(self.is_running)
 
 
     # Uses the sawtooth client to create and send a new transaction
@@ -58,3 +61,7 @@ class DistributedManager(DistributedManagerInterface):
             self.database_manager.execute_operation(operation)
         else:
             self.log(" No Database Manager")
+
+
+    def is_running(self):
+        return self._running

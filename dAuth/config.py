@@ -64,6 +64,10 @@ class DistributedManagerConfig:
     FAMILY_NAME = 'ccellular'
     FAMILY_VERSION = '1.0'
 
+    # Batch configurations
+    BATCH_SIZE = 10           # Max size for a batch
+    BATCH_TIMEOUT = 5         # timeout before sending whatever transaction are available
+    BATCH_CHECK_DELAY = 0.01  # delay between checking for new transactions
 
 # Hack, sorry
 DatabaseManagerConfig.DISTRIBUTED_MANAGER_NAME = DistributedManagerConfig.NAME
