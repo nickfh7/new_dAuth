@@ -3,15 +3,17 @@ import sys
 import threading
 
 from dAuth.ccellular import CCellular
-from dAuth.managers import NetworkManager, TestManager, TestDatabaseManager, TestDistributedManager, DatabaseManager
+from dAuth.managers import NetworkManager, TestManager, DistributedManager, DatabaseManager
 from network.services import LoggingClient
 from dAuth.config import CCellularConfig, NetworkManagerConfig, DatabaseManagerConfig, DistributedManagerConfig
 from dAuth.parser import parse_args
 
+
+# Sets up a dAuth node to run indefinitely
 def main():
     # Set up config objects and parsing
     cc_config = CCellularConfig()
-    nwm_config = NetworkManagerConfig()
+    nwm_config = None # NetworkManagerConfig()
     dbm_config = DatabaseManagerConfig()
     dstm_config = DistributedManagerConfig()
     parse_args(cc_config=cc_config, nwm_config=nwm_config, dbm_config=dbm_config, dstm_config=dstm_config)
@@ -20,31 +22,21 @@ def main():
     cc = CCellular(cc_config)
 
     # Add the network manager and grab logging function
-    nwm = NetworkManager(nwm_config)
-    cc.logger = nwm.get_service(LoggingClient.name).log
-    cc.add_manager(nwm)
+    # nwm = NetworkManager(nwm_config)
+    # cc.logger = nwm.get_service(LoggingClient.name).log
+    # cc.add_manager(nwm)
 
     # Add database manager
-    # dbm = TestDatabaseManager(dbm_config)
     dbm = DatabaseManager(dbm_config)
     cc.add_manager(dbm)
 
-    # # Add distributed manager
-    dstm = TestDistributedManager(dstm_config)
+    # Add distributed manager
+    dstm = DistributedManager(dstm_config)
     cc.add_manager(dstm)
 
+    # Set the run function
+    cc_config.RUN_FUNCTION = dstm.run_main
+
     # Start running CCellular
-    print("Starting dAuth")
-    cc.start()
-
-    # Create end function
-    def stop_server(signal, frame):
-        print('\nStopping...')
-        cc.stop()
-        sys.exit(0)
-
-    # Wait until interrupt
-    signal.signal(signal.SIGINT, stop_server)
-    print("Ctr-c to stop")
-    forever = threading.Event()
-    forever.wait()
+    cc.start()  # Should block until ctrl-c
+    cc.stop()

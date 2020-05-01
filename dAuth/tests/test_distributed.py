@@ -40,13 +40,14 @@ def multi_node_test():
     for i in range(5):
         cc_conf = CCellularConfig()
         cc_conf.OUTPUT_DIR = "./output/tests/distributed/mulit_node_" + str(i)
-        cc_conf.LOGGING_ENABLED = False
+        cc_conf.LOGGING_ENABLED = True
         cc = CCellular(cc_conf)
         ccs.append(cc)
 
         dst_conf = DistributedManagerConfig()
         dst_conf.VALIDATOR_URL = 'tcp://localhost:' + str(4004 + i)
-        dst_conf.BATCH_SIZE = 20
+        dst_conf.CLIENT_URL = 'localhost:' + str(8008 + i)
+        dst_conf.BATCH_SIZE = 10
         dst_conf.BATCH_TIMEOUT = 5
         dst = DistributedManager(dst_conf)
         cc.add_manager(dst)
@@ -71,7 +72,7 @@ def multi_node_test():
         threads.append(t)
 
     start = None
-    num_messages = 200
+    num_messages = 500
     rate = 0.01
     try:
         

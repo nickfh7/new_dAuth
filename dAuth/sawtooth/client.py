@@ -101,8 +101,9 @@ class CCellularClient:
         while self.run_check():
             # get any new transactions (up to batch size)
             while self.transaction_queue.qsize() > 0:
+                # get the next pending transaction and add it to pending
                 action, operation = self.transaction_queue.get()
-                self._send_transaction(action, operation)
+                self._build_transaction(action, operation)
 
                 # stop adding new messages if batch size is reached
                 # TODO: possible overloading option?
@@ -113,9 +114,10 @@ class CCellularClient:
             if len(self.pending_transactions) == 0:
                 self.last_batch_time = time.time()
             
-            # check for a new full size batch or a batch timeout
+            # check for a new full size batch or a batch timeout with at least one transaction
             elif len(self.pending_transactions) >= self.conf.BATCH_SIZE or\
-                    time.time() - self.last_batch_time >= self.conf.BATCH_TIMEOUT:
+                     (time.time() - self.last_batch_time >= self.conf.BATCH_TIMEOUT and\
+                     len(self.pending_transactions) > 0):
 
                 self.log("Creating and sending new batch")
                 if len(self.pending_transactions) >= self.conf.BATCH_SIZE:
@@ -124,8 +126,15 @@ class CCellularClient:
                     self.log(" Batch timeout exceeded, sending with {0}/{1}"\
                         .format(len(self.pending_transactions), self.conf.BATCH_SIZE))
 
-                # build batch from available transactions, then reset
+                # build batch from available transactions
                 batch_list = self._create_batch_list(self.pending_transactions)
+
+                # continue and retry later if there is no batch to send
+                if batch_list is None:
+                    self.log("No batch list to send")
+                    continue
+
+                # clear the pending list of transactions
                 self.pending_transactions = []
 
                 # Send new batch (TODO save output?)
@@ -141,8 +150,8 @@ class CCellularClient:
         self.transaction_batcher_thread = None
 
 
-    # Internal method for building and sending a transaction
-    def _send_transaction(self, action, operation):
+    # Builds a transaction from the provided info and adds to pending
+    def _build_transaction(self, action, operation):
         payload = build_payload(action, operation)
         address = make_ccellular_address(operation.key())
 
@@ -172,6 +181,10 @@ class CCellularClient:
     # Creates a transaction batch of one or more transactions
     # All transactions must be included in a batch
     def _create_batch_list(self, transactions):
+        if len(transactions) < 1:
+            self.log("Attempting to create batch with no transactions, ignoring")
+            return None
+
         transaction_signatures = [t.header_signature for t in transactions]
 
         header = BatchHeader(

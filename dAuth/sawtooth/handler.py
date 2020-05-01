@@ -47,17 +47,13 @@ class CCellularHandler(TransactionHandler):
             try:
                 self.apply_callback(operation)
             except ValueError:
-                self.log(" Database operation failed, skipping state change")
-                return
-
+                self.log(" Database operation failed")
 
             # update the state
-            self.log("STATE: " + str(state))
             updated_state = dict(state.items())
             updated_state[key] = data
-            self.log("UPDATED STATE: " + str(updated_state))
-            self.log(str(state == updated_state))
             set_state_data(key, updated_state, context)
+
         else:
             raise InternalError('Invalid function requested to be executed by CCellular Handler')
 

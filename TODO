@@ -1,20 +1,22 @@
 Major areas to work on:
 
-> Database Manager Issues:
+> Database Manager:
   - Update and delete triggers do not have remote and ownership data, creates issue with propagation
   -- Fix that uses dicts with pending info has been used, works for now
 
-> Add distributed manager:
-  - Again, a lot of the work should be done
-  - Figure out the transaction processor, how it work, what to give it
-  - Figure out the validator and how to set it up
+> Distributed manager:
   - Add configuration options to config and parser
+  - Figure out occasional crashes
 
-> Unit testing:
-  - Add unit tests to the testing package
-  - As a start, make a basic framework test with the test managers
-  - Tests for each manager separately would be good too
-  - Finally, some way of testing the entire system
+> Testing:
+  - Add testing for each Manager
+  - Improve performance test
+  - Use real testing data
 
-> Random Ideas:
-  - create a multi-node test setup that runs indefinitely
+> Proto:
+  - Change to new format / data (both proto and wrapper)
+
+> Overall:
+  - Transaction ordering? Add a sequence number to databases?
+  -- Assumes no two databases are working on same data within a given time frame 
+  -- (different operation for same seqnums possible otherwise)
