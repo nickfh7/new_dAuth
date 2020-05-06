@@ -1,0 +1,32 @@
+version: "3"
+
+volumes:
+    main-vol:
+    repl-vol:
+    
+services:
+  mongo-main:
+    container_name: mongo-main
+    image: mongo
+    expose:
+      - 27017
+    ports:
+      - "27017:27017"
+    volumes:
+      - main-vol:/data/db
+    restart: always
+    # Spawn off a background proccess that waits (hopefully long enough),
+    # then configures the replica setup
+    entrypoint: [ "/bin/bash", "-c", "sleep 5 && 
+                                      mongo --eval 'rs.initiate()' &&
+                                      mongo --eval 'rs.add(\"mongo-repl:27017\")' & 
+                                      /usr/bin/mongod --bind_ip_all --replSet rs0" ]
+  mongo-repl:
+    container_name: mongo-repl
+    image: mongo
+    expose:
+      - 27017
+    volumes:
+      - repl-vol:/data/db
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
