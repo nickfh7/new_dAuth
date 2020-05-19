@@ -1,8 +1,8 @@
 version: "3"
 
 volumes:
-    main-vol:
-    repl-vol:
+  mongo-main-vol:
+  mongo-repl-vol:
     
 services:
   mongo-main:
@@ -13,7 +13,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - main-vol:/data/db
+      - mongo-main-vol:/data/db
     restart: always
     # Spawn off a background proccess that waits (hopefully long enough),
     # then configures the replica setup
@@ -27,6 +27,6 @@ services:
     expose:
       - 27017
     volumes:
-      - repl-vol:/data/db
+      - mongo-repl-vol:/data/db
     restart: always
     entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]

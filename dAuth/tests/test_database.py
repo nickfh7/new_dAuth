@@ -1,7 +1,6 @@
 import time
 import json
 import copy
-import pytest
 
 from dAuth.config import CCellularConfig, DatabaseManagerConfig, DistributedManagerConfig
 from dAuth.proto.database import DatabaseOperation
@@ -25,6 +24,7 @@ def test_db_single_node():
 
     db_conf.DATABASE_NAME = "testing_db"
     db_conf.COLLECTION_NAME = "single_node_test"
+    db_conf.HOST = "mongo-dauth-main"
 
     # Build managers and add them
     cc = CCellular(cc_conf)
@@ -84,6 +84,7 @@ def test_db_multi_node(num_nodes=3):
 
         db_conf.DATABASE_NAME = "testing_db"
         db_conf.COLLECTION_NAME = "multi_node_test_" + str(i)
+        db_conf.HOST = "mongo-dauth-main"
 
         # Build managers and add them
         cc = CCellular(cc_conf)
@@ -179,6 +180,7 @@ def test_db_propagation_performance(duration=5):
 
         db_conf.DATABASE_NAME = "testing_db"
         db_conf.COLLECTION_NAME = "multi_node_test_performance_" + str(i)
+        db_conf.HOST = "mongo-dauth-main"
 
         # Build managers and add them
         cc = CCellular(cc_conf)
@@ -241,7 +243,7 @@ def test_db_propagation_performance(duration=5):
 
 
 def run_tests():
-    # test_db_single_node()
+    test_db_single_node()
     test_db_multi_node()
-    # test_db_propagation_performance()
+    test_db_propagation_performance()
 

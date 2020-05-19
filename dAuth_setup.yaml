@@ -1,0 +1,49 @@
+version: "3"
+
+volumes:
+  # dauth-vol:
+  mongo-main-vol:
+  mongo-repl-vol:
+    
+services:
+  dauth:
+    container_name: dauth
+    image: dauth
+    expose:
+      - 13127
+      - 14127
+    depends_on:
+      - 'mongo-dauth-main'
+      - 'mongo-dauth-repl'
+    # volumes:
+    #   dauth-vol:/data/dauth
+    entrypoint: ["/bin/bash", "-c", "sleep 30 && test-ccellular-db"]
+
+  mongo-dauth-main:
+    container_name: mongo-dauth-main
+    image: mongo
+    expose:
+      - 27017
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-main-vol:/data/db
+    restart: always
+    # Spawn off a background proccess that waits (hopefully long enough),
+    # then configures the replica setup
+    entrypoint: [ "/bin/bash", "-c", "sleep 10 && 
+                                      mongo --eval 'rs.initiate()' &&
+                                      mongo --eval 'rs.reconfig(rs.conf().members[1] = 0)' &&
+                                      mongo --eval 'rs.add(\"mongo-dauth-repl:27017\")' & 
+                                      /usr/bin/mongod --bind_ip_all --replSet rs0" ]
+  mongo-dauth-repl:
+    container_name: mongo-dauth-repl
+    image: mongo
+    expose:
+      - 27017
+    volumes:
+      - mongo-repl-vol:/data/db
+    restart: always
+    # Delay allows the main to always be primary
+    entrypoint: [ "/bin/bash", "-c", "sleep 5 &&
+                                      /usr/bin/mongod --bind_ip_all --replSet rs0" ]

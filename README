@@ -6,7 +6,15 @@ dAuth
 
 Install
 -------
+WITH DOCKER:
+Build the local image with the following command (in root dir of project):
+- docker build -t dauth .
 
+Run dauth with and mongodb with:
+- docker-compose -f dauth_setup.yaml up
+
+
+WITHOUT DOCKER:
 Set up dAuth
 1. Create a virtual environment (i.e. 'virtualenv -p python3 venv'), then activate it ('source venv/bin/activate')
 2. Install dAuth with 'pip install -e .'
