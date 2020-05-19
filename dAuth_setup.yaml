@@ -1,9 +1,9 @@
 version: "3"
 
 volumes:
-  # dauth-vol:
-  mongo-main-vol:
-  mongo-repl-vol:
+  dauth-vol:
+  mongo-dauth-main-vol:
+  mongo-dauth-repl-vol:
     
 services:
   dauth:
@@ -27,7 +27,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongo-main-vol:/data/db
+      -mongo-dauth-main-vol:/data/db
     restart: always
     # Spawn off a background proccess that waits (hopefully long enough),
     # then configures the replica setup
@@ -42,7 +42,7 @@ services:
     expose:
       - 27017
     volumes:
-      - mongo-repl-vol:/data/db
+      - mongo-dauth-repl-vol:/data/db
     restart: always
     # Delay allows the main to always be primary
     entrypoint: [ "/bin/bash", "-c", "sleep 5 &&
