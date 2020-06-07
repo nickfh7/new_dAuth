@@ -13,6 +13,8 @@ Build the local image with the following command (in root dir of project):
 Run dauth with and mongodb with:
 - docker-compose -f dauth_setup.yaml up
 
+To configure the node, edit the yaml file directly
+
 
 WITHOUT DOCKER:
 Set up dAuth

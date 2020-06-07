@@ -35,7 +35,12 @@ def parse_args(cc_config:CCellularConfig=None,
 
     # Distributed manager
     if dstm_config:
-        pass
+        parser.add_argument("--dst-validator-url", help="url of validator to send transactions", default=dstm_config.VALIDATOR_URL)
+        parser.add_argument("--dst-client-key-path", help="local key path for the client", default=dstm_config.CLIENT_KEY_PATH)
+        parser.add_argument("--dst-client-url", help="client url of the sawtooth node", default=dstm_config.CLIENT_URL)
+        parser.add_argument("--dst-batch-size", help="max size of transaction batches", default=dstm_config.BATCH_SIZE)
+        parser.add_argument("--dst-batch-timeout", help="timeout before sending available batch", default=dstm_config.BATCH_TIMEOUT)
+        parser.add_argument("--dst-batch-check-delay", help="time between checking for new transactions", default=dstm_config.BATCH_CHECK_DELAY)
 
     args = parser.parse_args()
 
@@ -59,7 +64,11 @@ def parse_args(cc_config:CCellularConfig=None,
         dbm_config.DATABASE_NAME = args.db_name
         dbm_config.COLLECTION_NAME = args.db_collection
 
-
     # Distributed manager
     if dstm_config:
-        pass
+        dstm_config.VALIDATOR_URL = args.dst_validator_url
+        dstm_config.CLIENT_KEY_PATH = args.dst_client_key_path
+        dstm_config.CLIENT_URL = args.dst_client_url
+        dstm_config.BATCH_SIZE = args.dst_batch_size
+        dstm_config.BATCH_TIMEOUT = args.dst_batch_timeout
+        dstm_config.BATCH_CHECK_DELAY = args.dst_batch_check_delay

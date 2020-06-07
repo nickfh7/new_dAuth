@@ -5,8 +5,7 @@ Major areas to work on:
   -- Fix that uses dicts with pending info has been used, works for now
 
 > Distributed manager:
-  - Add configuration options to config and parser
-  - Figure out occasional crashes
+  - Figure out occasional crashes (Possibly relate to engine getting unhandled pings?)
 
 > Testing:
   - Add testing for each Manager

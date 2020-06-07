@@ -27,7 +27,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      -mongo-dauth-main-vol:/data/db
+      - mongo-dauth-main-vol:/data/db
     restart: always
     # Spawn off a background proccess that waits (hopefully long enough),
     # then configures the replica setup
