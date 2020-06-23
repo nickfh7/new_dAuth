@@ -15,17 +15,17 @@ from dAuth.proto.database import DatabaseOperation
 # Simple wrapper functions for producing and executing operations
 def do_insert(collection, key:str, data:dict):
     new_data = copy.copy(data)
-    new_data["_id"] = key
+    new_data["imsi"] = key
     operation = DatabaseOperation({"o": new_data}, op_type=DatabaseOperation.INSERT)
     do_operation(collection, operation)
 
 def do_update(collection, key:str, data:dict):
-    new_data = {"o2": {"_id":key}, "o": {"$v": 1, "$set": data}}
+    new_data = {"o2": {"imsi":key}, "o": {"$v": 1, "$set": data}}
     operation = DatabaseOperation(new_data, op_type=DatabaseOperation.UPDATE)
     do_operation(collection, operation)
 
 def do_delete(collection, key:str):
-    new_data = {"o": {"_id": key}}
+    new_data = {"o": {"imsi": key}}
     operation = DatabaseOperation(new_data, op_type=DatabaseOperation.DELETE)
     do_operation(collection, operation)
 

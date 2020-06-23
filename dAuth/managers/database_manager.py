@@ -26,8 +26,18 @@ class DatabaseManager(DatabaseManagerInterface):
         self.database = self.client[self.conf.DATABASE_NAME]
         self.collection = self.database[self.conf.COLLECTION_NAME]
 
+        # Set index for imsi
+        self.collection.create_index("imsi")
+
+        # Make a mapping of ids to imsis
+        self.id_map = {}
+
+        for op_doc in self.collection.find():
+            id_map[op_doc['o']['_id']] = op_doc['o']['imsi']
+
     def _start(self):
         self.log("Connected to database: " + self.conf.DATABASE_NAME)
+
 
         # Create trigger handler and start triggers
         self.trigger_handler = NextEPCHandler(client=self.client, 
@@ -58,6 +68,9 @@ class DatabaseManager(DatabaseManagerInterface):
                 self.log(" Doing insert operation with key: " + str(operation.key()))
 
                 MongoDBOperations.insert(self.collection, operation)
+
+                # Update the id map
+                self.collection.find_one({"imsi": operation.key()})
 
             elif operation.is_update():
                 # Add to pending updates
@@ -119,12 +132,7 @@ class DatabaseManager(DatabaseManagerInterface):
     def database_get(self, key:str):
         try:
             # Try to get op document, return only relevant data
-            res = self.collection.find({"_id":key})
-            if res is not None:
-                try:
-                    return res[0]
-                except IndexError:
-                    return None
+            return self.collection.find_one({"imsi":key})
         except Exception as e:
             self.log("database_get failed: " + str(e))
         

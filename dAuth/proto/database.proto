@@ -7,17 +7,24 @@ message DatabaseData {
         UPDATE = 1;
         DELETE = 2;
     }
-    string _id = 6;
-    Operation operation = 1;
-    bool remote = 2;
-    string ownership = 3;
-
-    // Database data
-    string imsi = 4;
-    string security = 5;
+    Operation operation = 2;
+    bool remote = 3;
+    string ownership = 4;
 
     // For update only
     string update_data = 7;
+
+    // Database data
+    string imsi = 8;
+    string rand = 9;
+    string sqn = 10;
+    string kasme = 11;
+    string ck = 12;
+    string ik = 13;
+    string ak = 14;
+    string amf = 15;
+    string autn = 16;
+    string xres = 17;
 }
 
 // Used for testing / comparison

@@ -19,3 +19,7 @@ Major areas to work on:
   - Transaction ordering? Add a sequence number to databases?
   -- Assumes no two databases are working on same data within a given time frame 
   -- (different operation for same seqnums possible otherwise)
+
+> Rework Database Manager:
+  - Start with reworking the database operation wrapper, it needs to be toned down (less abstraction)
+  - Refactor / rework the manager and triggers. Needs a smarter way to hold onto ids and 

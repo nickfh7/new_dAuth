@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='database',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x14proto/database.proto\x12\x08\x64\x61tabase\"\xd9\x01\n\x0c\x44\x61tabaseData\x12\x0b\n\x03_id\x18\x06 \x01(\t\x12\x33\n\toperation\x18\x01 \x01(\x0e\x32 .database.DatabaseData.Operation\x12\x0e\n\x06remote\x18\x02 \x01(\x08\x12\x11\n\townership\x18\x03 \x01(\t\x12\x0c\n\x04imsi\x18\x04 \x01(\t\x12\x10\n\x08security\x18\x05 \x01(\t\x12\x13\n\x0bupdate_data\x18\x07 \x01(\t\"/\n\tOperation\x12\n\n\x06INSERT\x10\x00\x12\n\n\x06UPDATE\x10\x01\x12\n\n\x06\x44\x45LETE\x10\x02\"\x96\x01\n\x0fOldDatabaseData\x12\x36\n\toperation\x18\x01 \x01(\x0e\x32#.database.OldDatabaseData.Operation\x12\x1a\n\x12hex_encoded_object\x18\x02 \x01(\t\"/\n\tOperation\x12\n\n\x06INSERT\x10\x00\x12\n\n\x06\x44\x45LETE\x10\x01\x12\n\n\x06UPDATE\x10\x02\x62\x06proto3')
+  serialized_pb=_b('\n\x14proto/database.proto\x12\x08\x64\x61tabase\"\xb1\x02\n\x0c\x44\x61tabaseData\x12\x33\n\toperation\x18\x02 \x01(\x0e\x32 .database.DatabaseData.Operation\x12\x0e\n\x06remote\x18\x03 \x01(\x08\x12\x11\n\townership\x18\x04 \x01(\t\x12\x13\n\x0bupdate_data\x18\x07 \x01(\t\x12\x0c\n\x04imsi\x18\x08 \x01(\t\x12\x0c\n\x04rand\x18\t \x01(\t\x12\x0b\n\x03sqn\x18\n \x01(\t\x12\r\n\x05kasme\x18\x0b \x01(\t\x12\n\n\x02\x63k\x18\x0c \x01(\t\x12\n\n\x02ik\x18\r \x01(\t\x12\n\n\x02\x61k\x18\x0e \x01(\t\x12\x0b\n\x03\x61mf\x18\x0f \x01(\t\x12\x0c\n\x04\x61utn\x18\x10 \x01(\t\x12\x0c\n\x04xres\x18\x11 \x01(\t\"/\n\tOperation\x12\n\n\x06INSERT\x10\x00\x12\n\n\x06UPDATE\x10\x01\x12\n\n\x06\x44\x45LETE\x10\x02\"\x96\x01\n\x0fOldDatabaseData\x12\x36\n\toperation\x18\x01 \x01(\x0e\x32#.database.OldDatabaseData.Operation\x12\x1a\n\x12hex_encoded_object\x18\x02 \x01(\t\"/\n\tOperation\x12\n\n\x06INSERT\x10\x00\x12\n\n\x06\x44\x45LETE\x10\x01\x12\n\n\x06UPDATE\x10\x02\x62\x06proto3')
 )
 
 
@@ -45,8 +45,8 @@ _DATABASEDATA_OPERATION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=205,
-  serialized_end=252,
+  serialized_start=293,
+  serialized_end=340,
 )
 _sym_db.RegisterEnumDescriptor(_DATABASEDATA_OPERATION)
 
@@ -71,8 +71,8 @@ _OLDDATABASEDATA_OPERATION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=358,
-  serialized_end=405,
+  serialized_start=446,
+  serialized_end=493,
 )
 _sym_db.RegisterEnumDescriptor(_OLDDATABASEDATA_OPERATION)
 
@@ -85,50 +85,99 @@ _DATABASEDATA = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='_id', full_name='database.DatabaseData._id', index=0,
-      number=6, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='operation', full_name='database.DatabaseData.operation', index=1,
-      number=1, type=14, cpp_type=8, label=1,
+      name='operation', full_name='database.DatabaseData.operation', index=0,
+      number=2, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='remote', full_name='database.DatabaseData.remote', index=2,
-      number=2, type=8, cpp_type=7, label=1,
+      name='remote', full_name='database.DatabaseData.remote', index=1,
+      number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='ownership', full_name='database.DatabaseData.ownership', index=3,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='imsi', full_name='database.DatabaseData.imsi', index=4,
+      name='ownership', full_name='database.DatabaseData.ownership', index=2,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='security', full_name='database.DatabaseData.security', index=5,
-      number=5, type=9, cpp_type=9, label=1,
+      name='update_data', full_name='database.DatabaseData.update_data', index=3,
+      number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='update_data', full_name='database.DatabaseData.update_data', index=6,
-      number=7, type=9, cpp_type=9, label=1,
+      name='imsi', full_name='database.DatabaseData.imsi', index=4,
+      number=8, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='rand', full_name='database.DatabaseData.rand', index=5,
+      number=9, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='sqn', full_name='database.DatabaseData.sqn', index=6,
+      number=10, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='kasme', full_name='database.DatabaseData.kasme', index=7,
+      number=11, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ck', full_name='database.DatabaseData.ck', index=8,
+      number=12, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ik', full_name='database.DatabaseData.ik', index=9,
+      number=13, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ak', full_name='database.DatabaseData.ak', index=10,
+      number=14, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='amf', full_name='database.DatabaseData.amf', index=11,
+      number=15, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='autn', full_name='database.DatabaseData.autn', index=12,
+      number=16, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='xres', full_name='database.DatabaseData.xres', index=13,
+      number=17, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -147,7 +196,7 @@ _DATABASEDATA = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=35,
-  serialized_end=252,
+  serialized_end=340,
 )
 
 
@@ -185,8 +234,8 @@ _OLDDATABASEDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=255,
-  serialized_end=405,
+  serialized_start=343,
+  serialized_end=493,
 )
 
 _DATABASEDATA.fields_by_name['operation'].enum_type = _DATABASEDATA_OPERATION

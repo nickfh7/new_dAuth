@@ -37,11 +37,13 @@ class DatabaseOperation:
 
             # use all data for an insert message
             if op_type == self.INSERT:
+                print("insert", protobuf_data)
                 data = protobuf_data['o']
 
             # use _id and insert values for update
             elif op_type == self.UPDATE:
-                data["_id"] = protobuf_data['o2']["_id"]
+                print("update", protobuf_data)
+                # data["imsi"] = protobuf_data['o2']["imsi"]
                 data["update_data"] = protobuf_data["o"]
 
                 # Remove the internal info
@@ -50,7 +52,8 @@ class DatabaseOperation:
 
             # use only _id for delete
             elif op_type == self.DELETE:
-                data["_id"] = protobuf_data["o"]["_id"]
+                print("delete", protobuf_data)
+                data["imsi"] = protobuf_data["o"]["imsi"]
                 
             # build protobuf message from data
             self.protobuf_message = self.dict_to_protobuf(data, op_type)
@@ -79,7 +82,7 @@ class DatabaseOperation:
     
     # Returns the field of the protobuf message that is used as the key
     def key(self):
-        return self.protobuf_message._id
+        return self.protobuf_message.imsi
 
     # Return the type of database operation
     def operation(self):
@@ -127,12 +130,12 @@ class DatabaseOperation:
         if self.is_insert():
             return None
         
-        # insert and delete need _id
+        # insert and delete need imsi as the key
         if self.is_update():
-            return {"_id": self.key()}
+            return {"imsi": self.key()}
         
         if self.is_delete():
-            return {"_id": self.key()}
+            return {"imsi": self.key()}
 
     # Return relevant data depending on operation
     def get_data(self):
@@ -169,14 +172,21 @@ class DatabaseOperation:
     # Returns a dict that represents the protobuf message
     # Operation is NOT returned in the dict
     @staticmethod
-    def protobuf_to_dict(protobuf_message):
+    def protobuf_to_dict(protobuf_message: DatabaseData):
         return {
-            "_id": protobuf_message._id,
             "remote": protobuf_message.remote,
             "ownership": protobuf_message.ownership,
+            "update_data": json.loads(protobuf_message.update_data),
             "imsi": protobuf_message.imsi,
-            "security": json.loads(protobuf_message.security),  # Security is a nested dict
-            "update_data": json.loads(protobuf_message.update_data)
+            "rand": protobuf_message.rand,
+            "sqn": protobuf_message.sqn,
+            "kasme": protobuf_message.kasme,
+            "ck": protobuf_message.ck,
+            "ik": protobuf_message.ik,
+            "ak": protobuf_message.ak,
+            "amf": protobuf_message.amf,
+            "autn": protobuf_message.autn,
+            "xres": protobuf_message.xres,
         }
     
     # Returns a new protobuf message from a dict
@@ -184,10 +194,17 @@ class DatabaseOperation:
     def dict_to_protobuf(protobuf_dict, op_type):
         return DatabaseData(
             operation=op_type,
-            _id=protobuf_dict.get("_id"),
             remote=protobuf_dict.get("remote"),
             ownership=protobuf_dict.get("ownership"),
+            update_data=json.dumps(protobuf_dict.get("update_data")),  # Only used for update messages
             imsi=protobuf_dict.get("imsi"),
-            security=json.dumps(protobuf_dict.get("security")),  # Security is a nested dict
-            update_data=json.dumps(protobuf_dict.get("update_data"))  # Only used for update messages
+            rand=protobuf_dict.get("rand"),
+            sqn=protobuf_dict.get("sqn"),
+            kasme=protobuf_dict.get("kasme"),
+            ck=protobuf_dict.get("ck"),
+            ik=protobuf_dict.get("ik"),
+            ak=protobuf_dict.get("ak"),
+            amf=protobuf_dict.get("amf"),
+            autn=protobuf_dict.get("autn"),
+            xres=protobuf_dict.get("xres"),
         )

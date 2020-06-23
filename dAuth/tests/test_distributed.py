@@ -72,14 +72,14 @@ def multi_node_test():
         threads.append(t)
 
     start = None
-    num_messages = 500
+    num_messages = 10
     rate = 0.01
     try:
         
         # Initialize test
         print("Cleaning previous test data")
         for db in dbms:
-            db.collection.delete_many({'imsi': '12345'})
+            db.collection.drop()
         print("Initial state (before operations):")
         for dbm in dbms:
             count = dbm.collection.count()
@@ -96,7 +96,7 @@ def multi_node_test():
         start = time.time()
         check_time = time.time()
         for i in range(num_messages):
-            main_db.database_insert("test_key_{0}".format(i), {"imsi": "12345"})
+            main_db.database_insert("test_key_{0}".format(i), {"rand": "12345"})
             time.sleep(rate)
 
             if time.time() - check_time >= 1:
@@ -140,7 +140,7 @@ def multi_node_test():
             cc.stop()
 
         for db in dbms:
-            db.collection.delete_many({'imsi': '12345'})
+            db.collection.drop()
 
         print(" All test data deleted, ctrl-c to end")
 
