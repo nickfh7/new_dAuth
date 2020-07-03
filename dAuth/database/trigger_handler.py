@@ -56,11 +56,11 @@ class TriggerHandler:
         
     def _handle_update(self, op_document):
         self.log("Triggered on update: " + str(op_document))
-        self._handle_operation(op_document['o2']['_id'])
+        self.update_callback(op_document['o2']['_id'])
 
     def _handle_delete(self, op_document):
         self.log("Triggered on delete <!!! NOT SUPPORTED !!!>: " + str(op_document))
-        self.insert_callback(op_document['o']['_id'])
+        self.delete_callback(op_document['o']['_id'])
 
     def log(self, message):
         if self.logger:

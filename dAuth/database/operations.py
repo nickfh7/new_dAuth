@@ -10,7 +10,7 @@ from dAuth.proto.database_entry import DatabaseEntry
 class MongoDBOperations:
     @staticmethod
     def insert(collection:Collection, entry:DatabaseEntry):
-        collection.update_one(entry.get_filter(), {"$set":entry.get_data()}, upsert=True)
+        return collection.update_one(entry.get_filter(), {"$set":entry.get_data()}, upsert=True).upserted_id
 
 
     @staticmethod

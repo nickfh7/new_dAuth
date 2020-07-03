@@ -33,6 +33,8 @@ class DatabaseManager(DatabaseManagerInterface):
         for doc in self.collection.find():
             self.id_map[doc['_id']] = doc.get('imsi')
 
+        self.trigger_callback_func = None
+
 
     def _start(self):
         # Set up triggers
@@ -48,21 +50,31 @@ class DatabaseManager(DatabaseManagerInterface):
 
     # Get the entry from system state
     def get_entry(self, key):
+        self.log("Getting entry with key: " + str(key))
         return DatabaseEntry(self.collection.find_one({"imsi":key}))
 
     # Update the entry in the system state
     def update_entry(self, entry:DatabaseEntry):
-        MongoDBOperations.insert(self.collection, entry)
+        self.log("Updating entry: " + str(entry.to_dict()))
+        result_id = MongoDBOperations.insert(self.collection, entry)
+        if result_id != None:
+            self.id_map[result_id] = entry.key()
 
     # Returns all key values from the system state
     def get_all_keys(self):
+        self.log("Retrieving all keys")
         return self.collection.distinct('imsi')
 
-    def report_update(self, entry:DatabaseEntry):
-        self.log("New update reported: " + str(entry.key()))
+    def set_report_callback(self, callback_func):
+        self.log("Report callback set")
+        self.trigger_callback_func = callback_func
+
+    def report_update(self, key):
+        self.log("New update reported: " + str(key))
+        if self.trigger_callback_func:
+            self.trigger_callback_func(key)
 
     def _trigger_callback(self, mongo_id):
+        self.log("Triggered on id: " + str(mongo_id))
         if mongo_id in self.id_map:
-            data = self.collection.find_one({'imsi':self.id_map[mongo_id]})
-            if data != None:
-                self.report_update(DatabaseEntry(data))
+            self.report_update(self.id_map[mongo_id])

@@ -58,8 +58,8 @@ class ManagerInterface:
     def log(self, message):
         if self.logger:
             self.logger(self.name, message)
-        else:
-            print("<{0}> {1}".format(self.name, message))
+        # else:
+        #     print("<{0}> {1}".format(self.name, message))
 
 
 # Standard interface for database management

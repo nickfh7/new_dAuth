@@ -14,6 +14,10 @@ class SyncManager(ManagerInterface):
         self.distributed_manager = None
         self.database_manager = None
 
+    def set_managers(self, distributed_manager, database_manager):
+        self.distributed_manager = distributed_manager
+        self.database_manager = database_manager
+
     # Syncs a single entry
     def sync_entry(self, key):
         database_entry = self.database_manager.get_entry(key)
@@ -28,7 +32,7 @@ class SyncManager(ManagerInterface):
             self.distributed_manager.update_entry(database_entry)
 
     def report_update(self, key):
-        pass
+        self.sync_entry(key)
 
     # Goes through the union of all keys bewteen managers
     # and syncs the corresponding entries
@@ -40,8 +44,15 @@ class SyncManager(ManagerInterface):
         all_keys.update(self.database_manager.get_all_keys())
 
         for key in all_keys:
-            self.sync_entry
+            self.sync_entry(key)
 
-    # Checks if the operation
+    # Checks if the entry needs to be updated to the compare_to value
+    # DOES NOT CHECK THE OTHER WAY AROUND
     def _needs_update(self, entry:DatabaseEntry, compare_to:DatabaseEntry):
-        pass # TODO
+        if entry == None:
+            return compare_to != None
+
+        if entry != None and compare_to != None:
+            return int(entry.to_dict()['sqn']) < int(compare_to.to_dict()['sqn'])
+
+        return False
