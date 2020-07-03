@@ -22,7 +22,7 @@ def trigger_test():
     manager = DatabaseManager(conf)
     manager.collection.drop()
     manager.id_map = {}
-    manager.set_trigger_callback(update_trigger_map)
+    manager.set_report_callback(update_trigger_map)
 
     # Start triggers
     manager.start()
