@@ -2,7 +2,7 @@ from sawtooth_sdk.processor.handler import TransactionHandler
 from sawtooth_sdk.processor.exceptions import InternalError
 
 from dAuth.config import DistributedManagerConfig
-from dAuth.proto.database import DatabaseOperation
+from dAuth.proto.database_entry import DatabaseEntry
 from dAuth.sawtooth.transactions import unpack_transaction, get_state_data, set_state_data, get_prefix
 
 
@@ -41,13 +41,13 @@ class CCellularHandler(TransactionHandler):
 
         if action == 'set':
             self.log(" Action is 'set'")
-            # use protobuf data to create a DatabaseOperation and execute it
-            operation = DatabaseOperation(data)
+            # use protobuf data to create a DatabaseEntry and execute it
+            entry = DatabaseEntry(data)
 
             try:
-                self.apply_callback(operation)
+                self.apply_callback(entry)
             except ValueError:
-                self.log(" Database operation failed")
+                self.log(" Database entry apply failed")
 
             # update the state
             updated_state = dict(state.items())

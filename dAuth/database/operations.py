@@ -1,6 +1,6 @@
 from pymongo.database import Collection
 
-from dAuth.proto.database import DatabaseOperation
+from dAuth.proto.database_entry import DatabaseEntry
 
 
 # TODO: figure out if it is ok keep an object id generated at insert for update and delete
@@ -9,15 +9,15 @@ from dAuth.proto.database import DatabaseOperation
 # All details for how an operation occurs should be done here
 class MongoDBOperations:
     @staticmethod
-    def insert(collection:Collection, operation:DatabaseOperation):
-        collection.insert_one(operation.get_data())
+    def insert(collection:Collection, entry:DatabaseEntry):
+        collection.update_one(entry.get_filter(), {"$set":entry.get_data()}, upsert=True)
 
 
     @staticmethod
-    def update(collection:Collection, operation:DatabaseOperation):
-        collection.update_one(operation.get_filter(), operation.get_data())
+    def update(collection:Collection, entry:DatabaseEntry):
+        collection.update_one(entry.get_filter(), entry.get_data())
 
 
     @staticmethod
-    def delete(collection:Collection, operation:DatabaseOperation):
-        collection.delete_one(operation.get_filter())
+    def delete(collection:Collection, entry:DatabaseEntry):
+        collection.delete_one(entry.get_filter())

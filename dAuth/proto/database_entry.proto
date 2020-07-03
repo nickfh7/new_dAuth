@@ -1,0 +1,16 @@
+syntax = "proto3";
+package database;
+
+message DatabaseEntryProto {
+    // Database data
+    string imsi = 1;
+    string rand = 2;
+    string sqn = 3;
+    string kasme = 4;
+    string ck = 5;
+    string ik = 6;
+    string ak = 7;
+    string amf = 8;
+    string autn = 9;
+    string xres = 10;
+}

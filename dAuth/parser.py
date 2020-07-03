@@ -1,23 +1,25 @@
 import argparse
 
-from dAuth.config import CCellularConfig,\
+from dAuth.config import CentralManagerConfig,\
                          NetworkManagerConfig,\
                          DatabaseManagerConfig,\
-                         DistributedManagerConfig
+                         DistributedManagerConfig,\
+                         SyncManagerConfig
 
 
-def parse_args(cc_config:CCellularConfig=None, 
+def parse_args(cm_config:CentralManagerConfig=None, 
                nwm_config:NetworkManagerConfig=None,
                dbm_config:DatabaseManagerConfig=None,
-               dstm_config:DistributedManagerConfig=None):
+               dstm_config:DistributedManagerConfig=None,
+               sync_config:SyncManagerConfig=None):
 
     # Build parser and add arguments for each available config
     parser = argparse.ArgumentParser(description="dAuth arguments are prefixed by shorthand manager type, i.e. --cc- or --db-")
 
-    # CCellular
-    if cc_config:
-        parser.add_argument("--cc-id", help="specify an id (randomly generated otherwise)", default=cc_config.ID)
-        parser.add_argument("--cc-out", help="directory for output, i.e. logs", default=cc_config.OUTPUT_DIR)
+    # Central manager
+    if cm_config:
+        parser.add_argument("--cc-id", help="specify an id (randomly generated otherwise)", default=cm_config.ID)
+        parser.add_argument("--cc-out", help="directory for output, i.e. logs", default=cm_config.OUTPUT_DIR)
 
     # Network manager
     if nwm_config:
@@ -45,10 +47,10 @@ def parse_args(cc_config:CCellularConfig=None,
     args = parser.parse_args()
 
     # Add results to each config
-    # CCellular
-    if cc_config:
-        cc_config.ID = args.cc_id
-        cc_config.OUTPUT_DIR = args.cc_out
+    # Central Manager
+    if cm_config:
+        cm_config.ID = args.cc_id
+        cm_config.OUTPUT_DIR = args.cc_out
 
     # Network manager
     if nwm_config:
