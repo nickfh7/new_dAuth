@@ -2,3 +2,7 @@ Finish implementing Sync Manager
 - Needs to figure out how comparison entries
 
 Figure out how to get key list from sawtooth
+
+
+Figure out endpoints for getting all data/keys
+Figure out why get (dist) isn't returning anything

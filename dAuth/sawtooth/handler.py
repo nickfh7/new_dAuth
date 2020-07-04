@@ -45,7 +45,7 @@ class CCellularHandler(TransactionHandler):
             entry = DatabaseEntry(data)
 
             try:
-                self.apply_callback(entry)
+                self.apply_callback(entry.key())
             except ValueError:
                 self.log(" Database entry apply failed")
 

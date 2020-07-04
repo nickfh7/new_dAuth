@@ -28,7 +28,7 @@ class TestDatabaseManager:
 
     # Returns all key values from the system state
     def get_all_keys(self):
-        return list(self.db.keys())
+        return set(self.db.keys())
 
     def report_update(self, entry:DatabaseEntry):
         self.report_callback(entry)

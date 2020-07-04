@@ -24,6 +24,8 @@ class DistributedManager(DistributedManagerInterface):
         self.handler.logger = self.log
         self.client.logger = self.log
 
+        self.trigger_callback_func = None
+
     def run_main(self):
         print("Running dAuth Transaction Processor, Ctr-c to stop")
         self.transaction_processor.start()  # blocking
@@ -40,18 +42,27 @@ class DistributedManager(DistributedManagerInterface):
 
     # Get the entry from system state
     def get_entry(self, key):
+        self.log("Getting entry for key: " + str(key))
         return self.client.get(key)
 
     # Update the entry in the system state
     def update_entry(self, entry:DatabaseEntry):
+        self.log("Updating entry: " + str(entry.to_dict()))
         self.client.set_entry(entry)
 
     # Returns all key values from the system state
     def get_all_keys(self):
-        return [] # TODO
+        self.log("Retrieving all keys")
+        return self.client.get_all()
 
-    def report_update(self, entry:DatabaseEntry):
-        self.log("New update reported: " + str(entry.key()))
+    def set_report_callback(self, callback_func):
+        self.log("Report callback set")
+        self.trigger_callback_func = callback_func
+
+    def report_update(self, key):
+        self.log("New update reported: " + str(key))
+        if self.trigger_callback_func:
+            self.trigger_callback_func(key)
 
     def is_running(self):
         return self._running

@@ -91,7 +91,29 @@ class CCellularClient:
                 return DatabaseEntry(cbor_decoded[key])
             except BaseException as e:
                 print("Received a base exception:", e)
-        return None        
+        return None
+
+    # Will likely get all data, may need to be optimized
+    def get_all(self):
+        self.log("Getting all keys")
+        prefix = get_prefix()  # For the transaction family
+        result = self._send_request("state", name="GET_ALL_KEYS", params={"address": prefix})
+        if result != None:
+            try:
+                json_result_list = json.loads(result)['data']
+                entry_key_set = set()
+                for result in json_result_list:
+                    data_response = result['data']
+                    b64data = yaml.safe_load(data_response)
+                    b64decoded = base64.b64decode(b64data)
+                    cbor_decoded = cbor.loads(b64decoded)
+                    entry_key_set.update(set(cbor_decoded.keys()))
+
+                return entry_key_set
+            except BaseException as e:
+                print("Received a base exception:", e)
+        return None
+
 
     # Processes available transactions into batches
     # Batch size and timeout can be configured
@@ -200,8 +222,8 @@ class CCellularClient:
             header_signature=signature)
         return BatchList(batches=[batch])
 
-    # Sends the actual batch request to the validator
-    def _send_request(self, suffix, data=None, content_type=None, name=None):
+    # Sends the request to the validator
+    def _send_request(self, suffix, data=None, content_type=None, name=None, params={}):
         if self.url.startswith("http://"):
             url = "{}/{}".format(self.url, suffix)
         else:
@@ -215,7 +237,7 @@ class CCellularClient:
             if data is not None:
                 result = requests.post(url, headers=headers, data=data)
             else:
-                result = requests.get(url, headers=headers)
+                result = requests.get(url, headers=headers, params=params)
 
             if result.status_code == 404:
                 self.log("No such Key Exists: {}".format(name))
