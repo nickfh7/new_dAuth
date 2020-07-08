@@ -100,6 +100,8 @@ class CCellularClient:
         result = self._send_request("state", name="GET_ALL_KEYS", params={"address": prefix})
         if result != None:
             try:
+                self.log("json result: " + str(json.loads(result)))
+                next_page = json.loads(result)['paging'].get('next')
                 json_result_list = json.loads(result)['data']
                 entry_key_set = set()
                 for result in json_result_list:
@@ -109,9 +111,30 @@ class CCellularClient:
                     cbor_decoded = cbor.loads(b64decoded)
                     entry_key_set.update(set(cbor_decoded.keys()))
 
+                # Get paginated elements
+                while next_page != None:
+                    self.log("Getting paginated element")
+                    result_obj = requests.get(next_page)
+                    if result_obj != None:
+                        if not result_obj.ok:
+                            self.log("Error getting paginated list -- {}: {}".format(result_obj.status_code, result_obj.reason))
+                            break
+                        
+                        result = result_obj.text
+
+                        next_page = json.loads(result)['paging'].get('next')
+                        json_result_list = json.loads(result)['data']
+                        self.log("json result (pag): " + str(json.loads(result)))
+                        for result in json_result_list:
+                            data_response = result['data']
+                            b64data = yaml.safe_load(data_response)
+                            b64decoded = base64.b64decode(b64data)
+                            cbor_decoded = cbor.loads(b64decoded)
+                            entry_key_set.update(set(cbor_decoded.keys()))
+
                 return entry_key_set
             except BaseException as e:
-                print("Received a base exception:", e)
+                self.log("Received a base exception: " + str(e))
         return None
 
 

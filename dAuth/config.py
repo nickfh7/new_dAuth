@@ -1,6 +1,6 @@
 import getpass
 
-# This file contains global configuration objects
+# This file contains configuration objects
 # Default values should be set here
 # In the main file, an instance of each of these should be made 
 #  and given to the respective manager
@@ -63,3 +63,7 @@ class DistributedManagerConfig:
 
 class SyncManagerConfig:
     NAME = "Sync Manager"
+    SYNC_ALL_INTERVAL = 60
+    SYNC_REPORTED_INTERVAL = 5
+    SYNC_REPORTED_MAX = 50
+    SYNC_CHECK_DELAY = 0.01

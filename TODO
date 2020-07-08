@@ -1,8 +1,7 @@
-Finish implementing Sync Manager
-- Needs to figure out how comparison entries
+Long term goals
+- Add more robust tests
+- Figure out the best comparison in sync manager
 
-Figure out how to get key list from sawtooth
 
-
-Figure out endpoints for getting all data/keys
-Figure out why get (dist) isn't returning anything
+Make a cache for commands in the batch (and update it over time) (needed?)
+Need to guarantee that a get after a put will return the most up to date value

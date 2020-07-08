@@ -22,6 +22,23 @@ def simple_sync_test():
 
         assert db.get_all_keys() == {"1", "2"}
         assert dist.get_all_keys() == {"1", "2"}
+
+        db.update_entry(DatabaseEntry({"imsi":'3', 'sqn':"1"}))
+        db.update_entry(DatabaseEntry({"imsi":'4', 'sqn':"1"}))
+        db.update_entry(DatabaseEntry({"imsi":'5', 'sqn':"1"}))
+
+        assert db.get_all_keys() == {"1", "2", "3", "4", "5"}
+        assert dist.get_all_keys() == {"1", "2"}
+
+        db.report_update("4")
+
+        assert db.get_all_keys() == {"1", "2", "3", "4", "5"}
+        assert dist.get_all_keys() == {"1", "2", "4"}
+
+        manager.sync_all()
+
+        assert db.get_all_keys() == {"1", "2", "3", "4", "5"}
+        assert dist.get_all_keys() == {"1", "2", "3", "4", "5"}
     
         print("Test Success")
     except Exception as e:

@@ -1,5 +1,3 @@
-import signal
-import sys
 import threading
 
 from dAuth.central_manager import CentralManager
@@ -23,7 +21,7 @@ def main():
 
     # Create the central manager
     cm = CentralManager(cm_config)
-    cm.init_managers(dbm_config, dstm_config, sync_config, nwm_config)    
+    cm.init_managers(dbm_config, dstm_config, sync_config, nwm_config)
 
     # Start running dAuth
     cm.start()  # Should block until ctrl-c

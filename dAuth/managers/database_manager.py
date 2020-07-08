@@ -39,9 +39,9 @@ class DatabaseManager(DatabaseManagerInterface):
     def _start(self):
         # Set up triggers
         self.trigger_handler = TriggerHandler(self.client, self.conf.DATABASE_NAME, self.conf.COLLECTION_NAME, logger=self.log)
-        self.trigger_handler.set_insert_callback(self._trigger_callback)
-        self.trigger_handler.set_update_callback(self._trigger_callback)
-        self.trigger_handler.set_delete_callback(self._trigger_callback)
+        self.trigger_handler.set_insert_callback(self._trigger_callback_key)
+        self.trigger_handler.set_update_callback(self._trigger_callback_id)
+        self.trigger_handler.set_delete_callback(self._trigger_callback_id)
         self.trigger_handler.start_triggers()
 
     def _stop(self):
@@ -51,7 +51,10 @@ class DatabaseManager(DatabaseManagerInterface):
     # Get the entry from system state
     def get_entry(self, key):
         self.log("Getting entry with key: " + str(key))
-        return DatabaseEntry(self.collection.find_one({"imsi":key}))
+        data = self.collection.find_one({"imsi":key})
+        if data != None:
+            return DatabaseEntry(data)
+        return None
 
     # Update the entry in the system state
     def update_entry(self, entry:DatabaseEntry):
@@ -74,7 +77,16 @@ class DatabaseManager(DatabaseManagerInterface):
         if self.trigger_callback_func:
             self.trigger_callback_func(key)
 
-    def _trigger_callback(self, mongo_id):
+    def _trigger_callback_key(self, mongo_id, key):
+        self.log("Triggered on id: " + str(mongo_id) + " With key: " + str(key))
+        if mongo_id in self.id_map:
+            self.log(" Updating key")
+
+        self.id_map[mongo_id] = key
+        self.report_update(key)
+            
+
+    def _trigger_callback_id(self, mongo_id):
         self.log("Triggered on id: " + str(mongo_id))
         if mongo_id in self.id_map:
             self.report_update(self.id_map[mongo_id])

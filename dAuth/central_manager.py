@@ -46,6 +46,8 @@ class CentralManager:
         self.distributed_manager.set_logger(self._double_log)
         self.sync_manager.set_logger(self._double_log)
 
+        self.sync_manager.set_managers(self.distributed_manager, self.database_manager)
+
     # Starts all managers
     def start(self):
         self.log("Start called")
@@ -60,6 +62,9 @@ class CentralManager:
                 # self.network_manager.start()
             except Exception as e:
                 self.log(" Failed to start managers: " + str(e))
+
+            self.log("Doing initial sync")
+            self.sync_manager.sync_all()
 
             # Run the distributed manager's client
             self.distributed_manager.run_main()

@@ -30,8 +30,8 @@ class TestDatabaseManager:
     def get_all_keys(self):
         return set(self.db.keys())
 
-    def report_update(self, entry:DatabaseEntry):
-        self.report_callback(entry)
+    def report_update(self, key):
+        self.report_callback(key)
 
 
 class TestDistributedManager(TestDatabaseManager):

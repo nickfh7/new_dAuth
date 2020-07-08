@@ -2,9 +2,9 @@ FROM python:3.7-slim-buster
 
 WORKDIR /usr/src/new_dAuth
 
-COPY ./network/ ./network/
-COPY ./dAuth/ ./dAuth/
-COPY ./op.sh ./README ./setup.py ./keygen.py ./
+COPY ../network/ ./network/
+COPY ../dAuth/ ./dAuth/
+COPY ./README ../setup.py ../keygen.py ./
 
 RUN apt -y update
 RUN apt -y upgrade

@@ -51,15 +51,15 @@ class TriggerHandler:
     # --- Trigger functions ---
     # Build operation based on op type, called by mongo triggers
     def _handle_insert(self, op_document):
-        self.log("Triggered on insert: " + str(op_document))
-        self.insert_callback(op_document['o']['_id'])
+        self.log("Triggered on insert")
+        self.insert_callback(op_document['o']['_id'], op_document['o'].get('imsi'))
         
     def _handle_update(self, op_document):
-        self.log("Triggered on update: " + str(op_document))
+        self.log("Triggered on update")
         self.update_callback(op_document['o2']['_id'])
 
     def _handle_delete(self, op_document):
-        self.log("Triggered on delete <!!! NOT SUPPORTED !!!>: " + str(op_document))
+        self.log("Triggered on delete <!!! NOT SUPPORTED !!!>")
         self.delete_callback(op_document['o']['_id'])
 
     def log(self, message):
