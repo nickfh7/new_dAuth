@@ -77,7 +77,8 @@ class SyncManager(ManagerInterface):
         self.log("Sync set size: " + str(len(l)))
         self.log("Sync set: " + str(l))
 
-        self.sync(all_keys)
+        # Add all available keys to the reported updates, to check them all
+        self.reported_updates.update({}.fromkeys(all_keys, None))
 
     # Checks if the entry needs to be updated to the compare_to value
     # DOES NOT CHECK THE OTHER WAY AROUND

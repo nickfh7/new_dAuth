@@ -64,5 +64,8 @@ class DistributedManager(DistributedManagerInterface):
         if self.trigger_callback_func:
             self.trigger_callback_func(key)
 
+    def count(self):
+        return len(self.get_all_keys())
+
     def is_running(self):
         return self._running

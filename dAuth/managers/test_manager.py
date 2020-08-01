@@ -1,7 +1,6 @@
 import copy
 
 from dAuth.proto.database_entry import DatabaseEntry
-from dAuth.config import DatabaseManagerConfig, DistributedManagerConfig
 
 
 # Test manager that emulates a basic database setup
@@ -12,6 +11,12 @@ class TestDatabaseManager:
     def __init__(self):
         self.db = {}
         self.report_callback = None
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
 
     def set_report_callback(self, callback):
         self.report_callback = callback
@@ -25,6 +30,7 @@ class TestDatabaseManager:
     # Update the entry in the system state
     def update_entry(self, entry:DatabaseEntry):
         self.db[entry.key()] = entry.get_serialized_message()
+        self.report_update(entry.key())
 
     # Returns all key values from the system state
     def get_all_keys(self):
@@ -33,6 +39,22 @@ class TestDatabaseManager:
     def report_update(self, key):
         self.report_callback(key)
 
+    def count(self):
+        return len(self.db.keys())
 
 class TestDistributedManager(TestDatabaseManager):
     name = "Test Dist Manager"
+
+    def __init__(self):
+        super().__init__()
+        self.report_callback = []
+
+    def set_report_callback(self, callback):
+        self.report_callback.append(callback)
+
+    def report_update(self, key):
+        for callback in self.report_callback:
+            callback(key)
+
+    def run_main(self):
+        pass

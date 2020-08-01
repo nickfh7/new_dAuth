@@ -90,3 +90,6 @@ class DatabaseManager(DatabaseManagerInterface):
         self.log("Triggered on id: " + str(mongo_id))
         if mongo_id in self.id_map:
             self.report_update(self.id_map[mongo_id])
+
+    def count(self):
+        return self.collection.estimated_document_count()
