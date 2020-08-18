@@ -38,7 +38,7 @@ class SyncManager(ManagerInterface):
             self.distributed_manager.update_entry(database_entry)
 
     def report_update(self, key):
-        self.reported_updates[key] = None
+        self.reported_updates[key] = None  # None is a placeholder
 
     def sync(self, keys:set):
         for key in keys:
@@ -52,7 +52,7 @@ class SyncManager(ManagerInterface):
         for key in reported_key_list:
             if len(keys_subset) >= self.conf.SYNC_REPORTED_MAX:
                 break
-
+            
             self.reported_updates.pop(key)
             keys_subset.add(key)
 
@@ -63,8 +63,8 @@ class SyncManager(ManagerInterface):
         self.sync(keys_subset)
 
     # Goes through the union of all keys bewteen managers
-    # and syncs the corresponding entries
-    def sync_all(self):
+    # DOES NOT DIRECTLY SYNC, simply adds every key to the reported set
+    def report_all(self):
         self.log("Syncing all keys")
 
         all_keys = set()
@@ -88,11 +88,33 @@ class SyncManager(ManagerInterface):
                 self.log("Both entries are None")
             else:
                 self.log("Entry is None")
+            
+            # Anything is better than nothing
             return compare_to != None
 
+
         if entry != None and compare_to != None:
-            self.log("Neither entry is None")
-            return int(entry.to_dict()['sqn']) < int(compare_to.to_dict()['sqn'])
+            self.log("Entry compare (max, cur): entry ({}, {}), compare_to ({}, {})"\
+                     .format(entry.get_max_known_sqn(),
+                             entry.get_max_current_sqn(),
+                             compare_to.get_max_known_sqn(),
+                             compare_to.get_max_current_sqn()))
+
+            if entry.get_max_known_sqn() < compare_to.get_max_known_sqn():
+                self.log("Entry has lower max sqn")
+                return True
+
+            elif entry.get_max_known_sqn() == compare_to.get_max_known_sqn():
+                if entry.get_max_current_sqn() == compare_to.get_max_current_sqn():
+                    # A list with LESS entries is more up to date
+                    self.log("Entry current max equal")
+                    return len(entry.get_vectors()) > len(compare_to.get_vectors())
+                else:
+                    return entry.get_max_current_sqn() < compare_to.get_max_current_sqn()
+
+            else:
+                self.log("Entry has a higher max seqnum")
+                return False
 
         self.log("Compare To entry is None")
         return False
@@ -114,7 +136,8 @@ class SyncManager(ManagerInterface):
             # update all keys
             if time.time() - last_sync_all > self.conf.SYNC_ALL_INTERVAL:
                 self.reported_updates.clear()
-                self.sync_all()
+                self.report_all()
+                self.sync_reported()
                 last_sync_all = time.time()
                 last_sync_reported = time.time()
 

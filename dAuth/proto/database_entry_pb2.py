@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='database',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1aproto/database_entry.proto\x12\x08\x64\x61tabase\"\x99\x01\n\x12\x44\x61tabaseEntryProto\x12\x0c\n\x04imsi\x18\x01 \x01(\t\x12\x0c\n\x04rand\x18\x02 \x01(\t\x12\x0b\n\x03sqn\x18\x03 \x01(\t\x12\r\n\x05kasme\x18\x04 \x01(\t\x12\n\n\x02\x63k\x18\x05 \x01(\t\x12\n\n\x02ik\x18\x06 \x01(\t\x12\n\n\x02\x61k\x18\x07 \x01(\t\x12\x0b\n\x03\x61mf\x18\x08 \x01(\t\x12\x0c\n\x04\x61utn\x18\t \x01(\t\x12\x0c\n\x04xres\x18\n \x01(\tb\x06proto3')
+  serialized_pb=_b('\n\x1aproto/database_entry.proto\x12\x08\x64\x61tabase\"J\n\x12\x44\x61tabaseEntryProto\x12\x0c\n\x04imsi\x18\x01 \x01(\t\x12\x0f\n\x07vectors\x18\x02 \x01(\t\x12\x15\n\rmax_known_sqn\x18\x03 \x01(\tb\x06proto3')
 )
 
 
@@ -40,64 +40,15 @@ _DATABASEENTRYPROTO = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='rand', full_name='database.DatabaseEntryProto.rand', index=1,
+      name='vectors', full_name='database.DatabaseEntryProto.vectors', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='sqn', full_name='database.DatabaseEntryProto.sqn', index=2,
+      name='max_known_sqn', full_name='database.DatabaseEntryProto.max_known_sqn', index=2,
       number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='kasme', full_name='database.DatabaseEntryProto.kasme', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='ck', full_name='database.DatabaseEntryProto.ck', index=4,
-      number=5, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='ik', full_name='database.DatabaseEntryProto.ik', index=5,
-      number=6, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='ak', full_name='database.DatabaseEntryProto.ak', index=6,
-      number=7, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='amf', full_name='database.DatabaseEntryProto.amf', index=7,
-      number=8, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='autn', full_name='database.DatabaseEntryProto.autn', index=8,
-      number=9, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='xres', full_name='database.DatabaseEntryProto.xres', index=9,
-      number=10, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -114,8 +65,8 @@ _DATABASEENTRYPROTO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=41,
-  serialized_end=194,
+  serialized_start=40,
+  serialized_end=114,
 )
 
 DESCRIPTOR.message_types_by_name['DatabaseEntryProto'] = _DATABASEENTRYPROTO

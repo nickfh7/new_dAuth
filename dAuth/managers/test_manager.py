@@ -30,6 +30,9 @@ class TestDatabaseManager:
     # Update the entry in the system state
     def update_entry(self, entry:DatabaseEntry):
         self.db[entry.key()] = entry.get_serialized_message()
+
+    def update_entry_and_report(self, entry:DatabaseEntry):
+        self.update_entry(entry)
         self.report_update(entry.key())
 
     # Returns all key values from the system state
