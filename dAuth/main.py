@@ -26,3 +26,8 @@ def main():
     # Start running dAuth
     cm.start()  # Should block until ctrl-c
     cm.stop()
+
+
+# Should not use this, use the installed command instead
+if __name__ == "__main__":
+    main()

@@ -3,11 +3,18 @@ from dAuth.managers import SyncManager, TestDatabaseManager, TestDistributedMana
 from dAuth.proto.database_entry import DatabaseEntry
 from dAuth.config import SyncManagerConfig
 
-# Returns true if the entry has the listed 
-def _check_entry(entry:DatabaseEntry, imsi, max_known_sqn, vectors):
-    return entry.key() == imsi and\
-        int(entry.get_max_current_sqn()) == int(max_known_sqn) and\
-        entry.get_vectors() == vectors
+# Tests are named with the following (except for the first test):
+# 'test_x_y_z'
+# x:
+#  - overwrite, which means all overwritten entries are on one side
+#  - mixed, which means both sides should get updated
+# y:
+#  - max, which means the max known is different
+#  - vectors, which means the vector list length is different
+#  - current, which means the current known is different
+# z:
+#  - full, which means all entries are updated
+#  - partial, which means a subset of entries are updated
 
 # Tests basic key propagation
 def test_simple_sync():
@@ -49,7 +56,7 @@ def test_simple_sync():
     assert db.get_all_keys() == {"1", "2", "3", "4", "5"}
     assert dist.get_all_keys() == {"1", "2", "3", "4", "5"}
 
-# Tests a full overwrite given 
+
 def test_overwrite_max_full():
     conf = SyncManagerConfig()
     manager = SyncManager(conf)
@@ -79,6 +86,7 @@ def test_overwrite_max_full():
     for imsi in db.get_all_keys():
         assert _check_entry(db.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
         assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
+
 
 def test_overwrite_max_partial():
     conf = SyncManagerConfig()
@@ -113,6 +121,7 @@ def test_overwrite_max_partial():
         assert _check_entry(db.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
         assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
 
+
 def test_overwrite_vectors_full():
     conf = SyncManagerConfig()
     manager = SyncManager(conf)
@@ -143,6 +152,7 @@ def test_overwrite_vectors_full():
         assert _check_entry(db.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
         assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
 
+
 def test_overwrite_vectors_partial():
     conf = SyncManagerConfig()
     manager = SyncManager(conf)
@@ -162,9 +172,66 @@ def test_overwrite_vectors_partial():
     assert db.get_all_keys() == {"1", "2", "3"}
     assert dist.get_all_keys() == {"1", "2", "3"}
 
+    for imsi in db.get_all_keys():
+        assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
+
+    manager.report_all()
+    manager.sync_reported()
+
+    for imsi in db.get_all_keys():
+        assert _check_entry(db.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
+        assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
+
+
+def test_overwrite_current_full():
+    conf = SyncManagerConfig()
+    manager = SyncManager(conf)
+    dist = TestDistributedManager()
+    db = TestDatabaseManager()
+    manager.set_managers(dist, db)
+    # manager.set_logger(print)
+
+    db.update_entry(DatabaseEntry({"imsi":'1', 'max_known_sqn':"2", "vectors": '[{"sqn":"1"}]'}))
+    db.update_entry(DatabaseEntry({"imsi":'2', 'max_known_sqn':"2", "vectors": '[{"sqn":"1"}]'}))
+    db.update_entry(DatabaseEntry({"imsi":'3', 'max_known_sqn':"2", "vectors": '[{"sqn":"1"}]'}))
+
+    dist.update_entry(DatabaseEntry({"imsi":'1', 'max_known_sqn':"2", "vectors": '[{"sqn":"2"}]'}))
+    dist.update_entry(DatabaseEntry({"imsi":'2', 'max_known_sqn':"2", "vectors": '[{"sqn":"2"}]'}))
+    dist.update_entry(DatabaseEntry({"imsi":'3', 'max_known_sqn':"2", "vectors": '[{"sqn":"2"}]'}))
+
+    assert db.get_all_keys() == {"1", "2", "3"}
+    assert dist.get_all_keys() == {"1", "2", "3"}
+
+    for imsi in db.get_all_keys():
+        assert _check_entry(db.get_entry(imsi), imsi, "2", [{'sqn':'1'}])
+        assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
+
+    manager.report_all()
+    manager.sync_reported()
+
+    for imsi in db.get_all_keys():
+        assert _check_entry(db.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
+        assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
+
+
+def test_overwrite_current_partial():
+    conf = SyncManagerConfig()
+    manager = SyncManager(conf)
+    dist = TestDistributedManager()
+    db = TestDatabaseManager()
+    manager.set_managers(dist, db)
+    # manager.set_logger(print)
+
     db.update_entry(DatabaseEntry({"imsi":'1', 'max_known_sqn':"2", "vectors": '[{"sqn":"2"}]'}))
-    db.update_entry(DatabaseEntry({"imsi":'2', 'max_known_sqn':"1", "vectors": '[{"sqn":"1"}, {"sqn":"2"}]'}))
-    db.update_entry(DatabaseEntry({"imsi":'3', 'max_known_sqn':"1", "vectors": '[{"sqn":"1"}, {"sqn":"2"}]'}))
+    db.update_entry(DatabaseEntry({"imsi":'2', 'max_known_sqn':"2", "vectors": '[{"sqn":"1"}]'}))
+    db.update_entry(DatabaseEntry({"imsi":'3', 'max_known_sqn':"2", "vectors": '[{"sqn":"1"}]'}))
+
+    dist.update_entry(DatabaseEntry({"imsi":'1', 'max_known_sqn':"2", "vectors": '[{"sqn":"2"}]'}))
+    dist.update_entry(DatabaseEntry({"imsi":'2', 'max_known_sqn':"2", "vectors": '[{"sqn":"2"}]'}))
+    dist.update_entry(DatabaseEntry({"imsi":'3', 'max_known_sqn':"2", "vectors": '[{"sqn":"2"}]'}))
+
+    assert db.get_all_keys() == {"1", "2", "3"}
+    assert dist.get_all_keys() == {"1", "2", "3"}
 
     for imsi in db.get_all_keys():
         assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
@@ -175,6 +242,7 @@ def test_overwrite_vectors_partial():
     for imsi in db.get_all_keys():
         assert _check_entry(db.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
         assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
+
 
 def test_mixed_max_full():
     conf = SyncManagerConfig()
@@ -210,6 +278,7 @@ def test_mixed_max_full():
         assert _check_entry(db.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
         assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
 
+
 def test_mixed_max_partial():
     conf = SyncManagerConfig()
     manager = SyncManager(conf)
@@ -243,6 +312,7 @@ def test_mixed_max_partial():
     for imsi in db.get_all_keys():
         assert _check_entry(db.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
         assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
+
 
 def test_mixed_vectors_full():
     conf = SyncManagerConfig()
@@ -312,6 +382,14 @@ def test_mixed_vectors_partial():
         assert _check_entry(db.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
         assert _check_entry(dist.get_entry(imsi), imsi, "2", [{'sqn':'2'}])
 
+
+# Returns true if the entry has the listed 
+def _check_entry(entry:DatabaseEntry, imsi, max_known_sqn, vectors):
+    return entry.key() == imsi and\
+        int(entry.get_max_known_sqn()) == int(max_known_sqn) and\
+        entry.get_vectors() == vectors
+
+
 def run_test(test, test_name):
     try:
         print("Running", test_name)
@@ -319,10 +397,11 @@ def run_test(test, test_name):
         print("Test Success")
         print()
         return 1
-    except Exception as e:
+    except AssertionError as e:
         print("Test Failed:", e)
         print()
         return 0
+
 
 def run_all_tests():
     passed = 0
@@ -331,12 +410,15 @@ def run_all_tests():
     passed += run_test(test_overwrite_max_partial, "test_overwrite_max_partial")
     passed += run_test(test_overwrite_vectors_full, "test_overwrite_vectors_full")
     passed += run_test(test_overwrite_vectors_partial, "test_overwrite_vectors_partial")
+    passed += run_test(test_overwrite_current_full, "test_overwrite_current_full")
+    passed += run_test(test_overwrite_current_partial, "test_overwrite_current_partial")
     passed += run_test(test_mixed_max_full, "test_mixed_max_full")
     passed += run_test(test_mixed_max_partial, "test_mixed_max_partial")
     passed += run_test(test_mixed_vectors_full, "test_mixed_vectors_full")
     passed += run_test(test_mixed_vectors_partial, "test_mixed_vectors_partial")
 
-    print("Test passed: {}/{}".format(passed, 9))
+    print("Tests passed: {}/{}".format(passed, 11))
     
+
 if __name__ == "__main__":
     run_all_tests()

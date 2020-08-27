@@ -53,7 +53,7 @@ def integrated_tests():
         check_time = time.time()
 
         for i in range(num_inserts):
-            nodes[0].database_manager.update_entry(DatabaseEntry({'imsi':str(i), 'sqn':'1'}))
+            nodes[0].database_manager.update_entry(DatabaseEntry({"imsi": str(i), 'max_known_sqn': "1", "vectors": '[{"sqn":"1"}]'}))
             time.sleep(rate)
 
             if time.time() - check_time >= 1:

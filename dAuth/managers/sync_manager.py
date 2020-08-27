@@ -52,7 +52,7 @@ class SyncManager(ManagerInterface):
         for key in reported_key_list:
             if len(keys_subset) >= self.conf.SYNC_REPORTED_MAX:
                 break
-            
+
             self.reported_updates.pop(key)
             keys_subset.add(key)
 
@@ -92,6 +92,11 @@ class SyncManager(ManagerInterface):
             # Anything is better than nothing
             return compare_to != None
 
+        # The logic for needing an update:
+        # - If the max known is lower
+        # - Else if max known is equal:
+        #   - If max current is lower
+        #   - Else if max current is equal and length of vectors is *longer*
 
         if entry != None and compare_to != None:
             self.log("Entry compare (max, cur): entry ({}, {}), compare_to ({}, {})"\
