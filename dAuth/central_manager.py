@@ -63,9 +63,6 @@ class CentralManager:
             except Exception as e:
                 self.log(" Failed to start managers: " + str(e))
 
-            self.log("Doing initial sync")
-            self.sync_manager.sync_all()
-
             # Run the distributed manager's client
             self.distributed_manager.run_main()
         else:

@@ -26,6 +26,9 @@ class DatabaseEntry:
         else:
             raise ValueError("protobuf data is invalid type - " + str(type(protobuf_data)))
 
+        # Update the max sqn if needed
+        self.update_max_known_sqn()
+
     # Returns a dictionary with the protobuf message data
     def to_dict(self):
         return self.protobuf_to_dict(self.protobuf_message)
@@ -38,9 +41,24 @@ class DatabaseEntry:
     def size(self):
         return self.protobuf_message.ByteSize()
 
+    # Returns the list of vectors
+    def get_vectors(self):
+        return json.loads(self.protobuf_message.vectors)
+
+    def get_max_known_sqn(self):
+        return int(self.protobuf_message.max_known_sqn)
+
+    # Returns max sqn, or -1 if there are none
+    def get_max_current_sqn(self):
+        vectors = self.get_vectors()
+        if len(vectors) > 0:
+            return max([int(vector['sqn']) for vector in vectors])
+        else:
+            return -1
+
     # Generate a filter for MongoDBs
     def get_filter(self):
-            return {"imsi": self.key()}
+        return {"imsi": self.key()}
 
     # Return relevant data depending on operation
     def get_data(self):
@@ -50,21 +68,18 @@ class DatabaseEntry:
     def get_serialized_message(self):
         return self.protobuf_message.SerializeToString()
 
+    def update_max_known_sqn(self):
+        self.protobuf_message.max_known_sqn =\
+            str(max(self.get_max_known_sqn(), self.get_max_current_sqn()))
+
     # Returns a dict that represents the protobuf message
     # Operation is NOT returned in the dict
     @staticmethod
     def protobuf_to_dict(protobuf_message:DatabaseEntryProto):
         return {
             "imsi": protobuf_message.imsi,
-            "rand": protobuf_message.rand,
-            "sqn": protobuf_message.sqn,
-            "kasme": protobuf_message.kasme,
-            "ck": protobuf_message.ck,
-            "ik": protobuf_message.ik,
-            "ak": protobuf_message.ak,
-            "amf": protobuf_message.amf,
-            "autn": protobuf_message.autn,
-            "xres": protobuf_message.xres,
+            "max_known_sqn": protobuf_message.max_known_sqn,
+            "vectors": protobuf_message.vectors,
         }
     
     # Returns a new protobuf message from a dict
@@ -72,13 +87,6 @@ class DatabaseEntry:
     def dict_to_protobuf(protobuf_dict:dict):
         return DatabaseEntryProto(
             imsi=protobuf_dict.get("imsi"),
-            rand=protobuf_dict.get("rand"),
-            sqn=protobuf_dict.get("sqn"),
-            kasme=protobuf_dict.get("kasme"),
-            ck=protobuf_dict.get("ck"),
-            ik=protobuf_dict.get("ik"),
-            ak=protobuf_dict.get("ak"),
-            amf=protobuf_dict.get("amf"),
-            autn=protobuf_dict.get("autn"),
-            xres=protobuf_dict.get("xres"),
+            max_known_sqn=protobuf_dict.get("max_known_sqn"),
+            vectors=protobuf_dict.get("vectors")
         )
