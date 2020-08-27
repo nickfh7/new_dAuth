@@ -2,7 +2,7 @@ from sawtooth_sdk.processor.core import TransactionProcessor
 
 from dAuth.managers.interface import DistributedManagerInterface
 from dAuth.config import DistributedManagerConfig
-from dAuth.proto.database import DatabaseOperation
+from dAuth.proto.database_entry import DatabaseEntry
 from dAuth.sawtooth.client import CCellularClient
 from dAuth.sawtooth.handler import CCellularHandler
 
@@ -15,53 +15,62 @@ class DistributedManager(DistributedManagerInterface):
         # Set up transaction processor
         self.transaction_processor = TransactionProcessor(url=conf.VALIDATOR_URL)
         self.handler = CCellularHandler(conf)
-        self.handler.set_apply_callback(self.new_remote_operation)
+        self.handler.set_apply_callback(self.report_update)
         self.transaction_processor.add_handler(self.handler)
 
         self.client = CCellularClient(conf)
-
-        # Set at start
-        self.database_manager = None
 
         # Set loggers
         self.handler.logger = self.log
         self.client.logger = self.log
 
+        self.trigger_callback_func = None
+
+    # Blocking function that runs the transaction processor
     def run_main(self):
-        print("Running CCellular Transaction Processor, Ctr-c to stop")
+        print("Running dAuth Transaction Processor, Ctr-c to stop")
         self.transaction_processor.start()  # blocking
         print("\nStopping")
         self.transaction_processor.stop()   # make sure to close out connection
-
 
     # called on startup from central manager
     def _start(self):
         self.log("Connecting to validator at " + str(self.conf.VALIDATOR_URL))
 
-        # get the current database manager
-        self.database_manager = self.get_manager(self.conf.DATABASE_MANAGER_NAME)
-
         # send a thread to the transaction batcher
         self.client.start_batcher(self.is_running)
 
+    # Get the entry from system state
+    def get_entry(self, key):
+        self.log("Getting entry for key: " + str(key))
+        return self.client.get(key)
 
-    # Uses the sawtooth client to create and send a new transaction
-    def propagate_operation(self, operation: DatabaseOperation):
-        self.log("Propagating operation, sending to client")
-        self.client.set_operation(operation)
-        
-    # Transaction processor uses this (via its handler)
-    def new_remote_operation(self, operation: DatabaseOperation):
-        if operation.ownership() == self.id:
-            self.log("Avoiding replay of operation - " + str(operation.key()) + ", " + str(operation.operation()))
-            raise ValueError("Replay value")
+    # Update the entry in the system state
+    def update_entry(self, entry:DatabaseEntry):
+        self.log("Updating entry: " + str(entry.to_dict()))
+        self.client.set_entry(entry)
 
-        self.log("New remote operation, passing to Database Manager")
-        if self.database_manager:
-            self.database_manager.execute_operation(operation)
-        else:
-            self.log(" No Database Manager")
+    # Returns all key values from the system state
+    def get_all_keys(self):
+        self.log("Retrieving all keys")
+        return self.client.get_all()
 
+    # Sets a callback function called when new data is available
+    # for a given key (the key is passed as an arg to the callback)
+    def set_report_callback(self, callback_func):
+        self.log("Report callback set")
+        self.trigger_callback_func = callback_func
+
+    # Called when new data is available for a key, and will pass 
+    # the key back through the callback function if it is set
+    def report_update(self, key):
+        self.log("New update reported: " + str(key))
+        if self.trigger_callback_func:
+            self.trigger_callback_func(key)
+
+    # Returns the number of all keys available
+    def count(self):
+        return len(self.get_all_keys())
 
     def is_running(self):
         return self._running

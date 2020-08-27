@@ -1,0 +1,13 @@
+syntax = "proto3";
+package database;
+
+message DatabaseEntryProto {
+    // The main key
+    string imsi = 1;
+
+    // Json string of all authentication vectors
+    string vectors = 2;
+
+    // Largest seqnum seen so far
+    string max_known_sqn = 3;
+}

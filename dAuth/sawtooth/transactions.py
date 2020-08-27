@@ -4,7 +4,7 @@ import hashlib
 from sawtooth_sdk.protobuf.transaction_pb2 import Transaction
 from sawtooth_sdk.processor.exceptions import InvalidTransaction, InternalError
 
-from dAuth.proto.database import DatabaseOperation
+from dAuth.proto.database_entry import DatabaseEntry
 from dAuth.config import DistributedManagerConfig
 
 
@@ -24,11 +24,11 @@ def make_ccellular_address(key):
 
 
 # Creates and returns a serialized payload
-def build_payload(action, operation:DatabaseOperation):
+def build_payload(action, entry:DatabaseEntry):
     payload = {
         "verb": action,
-        "key": operation.key(),
-        "data": operation.get_serialized_message()
+        "key": entry.key(),
+        "data": entry.get_serialized_message()
     }
 
     return cbor.dumps(payload)
@@ -47,7 +47,7 @@ def extract_payload(serialized_payload):
     return action, key, data
 
 
-# Unpacks the transaction and returns a DatabaseOperation
+# Unpacks the transaction
 def unpack_transaction(transaction:Transaction):
     # get the payload info
     action, key, data = extract_payload(transaction.payload)

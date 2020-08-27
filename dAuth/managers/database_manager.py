@@ -3,11 +3,10 @@ from pymongo.errors import PyMongoError
 from pymongo.database import Collection
 
 from dAuth.managers.interface import DatabaseManagerInterface
-from dAuth.proto.database import DatabaseOperation
+from dAuth.proto.database_entry import DatabaseEntry
 from dAuth.config import DatabaseManagerConfig
+from dAuth.database.trigger_handler import TriggerHandler
 from dAuth.database.operations import MongoDBOperations
-from dAuth.database.operations_cli import do_insert, do_update, do_delete
-from dAuth.database.nextepc_handler import NextEPCHandler
 
 
 # Manages all database operations
@@ -26,106 +25,71 @@ class DatabaseManager(DatabaseManagerInterface):
         self.database = self.client[self.conf.DATABASE_NAME]
         self.collection = self.database[self.conf.COLLECTION_NAME]
 
+        # Set index for imsi
+        self.collection.create_index("imsi")
+
+        # Map ids to imsis
+        self.id_map = {}
+        for doc in self.collection.find():
+            self.id_map[doc['_id']] = doc.get('imsi')
+
+        self.trigger_callback_func = None
+
+
     def _start(self):
-        self.log("Connected to database: " + self.conf.DATABASE_NAME)
-
-        # Create trigger handler and start triggers
-        self.trigger_handler = NextEPCHandler(client=self.client, 
-                                              db_name=self.conf.DATABASE_NAME,
-                                              collection_name=self.conf.COLLECTION_NAME, 
-                                              ownership=self.id,
-                                              trigger_callback=self.new_local_operation,
-                                              logger=self.log)
+        # Set up triggers
+        self.trigger_handler = TriggerHandler(self.client, self.conf.DATABASE_NAME, self.conf.COLLECTION_NAME, logger=self.log)
+        self.trigger_handler.set_insert_callback(self._trigger_callback_key)
+        self.trigger_handler.set_update_callback(self._trigger_callback_id)
+        self.trigger_handler.set_delete_callback(self._trigger_callback_id)
         self.trigger_handler.start_triggers()
-
-        # Get the distributed manager
-        self.distributed_manager = self.get_manager(self.conf.DISTRIBUTED_MANAGER_NAME)
 
     def _stop(self):
         self.trigger_handler.stop_triggers()
         self.client.close()
 
-    # Execute an operation, presumably from another dAuth node
-    def execute_operation(self, operation:DatabaseOperation):
-        if operation.ownership() == self.id:
-            self.log("!!! Attempting to re-execute local operation, ignoring")
-            return
+    # Get the entry from system state
+    def get_entry(self, key):
+        self.log("Getting entry with key: " + str(key))
+        data = self.collection.find_one({"imsi":key})
+        if data != None:
+            return DatabaseEntry(data)
+        return None
 
-        self.log("Executing operation from " + str(operation.ownership()))
+    # Update the entry in the system state
+    def update_entry(self, entry:DatabaseEntry):
+        self.log("Updating entry: " + str(entry.to_dict()))
+        result_id = MongoDBOperations.insert(self.collection, entry)
+        if result_id != None:
+            self.id_map[result_id] = entry.key()
 
-        try:
-            if operation.is_insert():
-                self.log(" Doing insert operation with key: " + str(operation.key()))
+    # Returns all key values from the system state
+    def get_all_keys(self):
+        self.log("Retrieving all keys")
+        return self.collection.distinct('imsi')
 
-                MongoDBOperations.insert(self.collection, operation)
+    def set_report_callback(self, callback_func):
+        self.log("Report callback set")
+        self.trigger_callback_func = callback_func
 
-            elif operation.is_update():
-                # Add to pending updates
-                self.trigger_handler.add_pending_update(operation)
+    def report_update(self, key):
+        self.log("New update reported: " + str(key))
+        if self.trigger_callback_func:
+            self.trigger_callback_func(key)
 
-                self.log(" Doing update operation with key: " + str(operation.key()))
-                MongoDBOperations.update(self.collection, operation)
+    def _trigger_callback_key(self, mongo_id, key):
+        self.log("Triggered on id: " + str(mongo_id) + " With key: " + str(key))
+        if mongo_id in self.id_map:
+            self.log(" Updating key")
 
-            elif operation.is_delete():
-                # Add to pending deletes
-                self.trigger_handler.add_pending_delete(operation)
+        self.id_map[mongo_id] = key
+        self.report_update(key)
+            
 
-                self.log(" Doing delete operation with key: " + str(operation.key()))
-                MongoDBOperations.delete(self.collection, operation)
+    def _trigger_callback_id(self, mongo_id):
+        self.log("Triggered on id: " + str(mongo_id))
+        if mongo_id in self.id_map:
+            self.report_update(self.id_map[mongo_id])
 
-            else:
-                self.log(" Bad operation type: " + str(operation.operation()))
-        except PyMongoError as e:
-            self.log(" Error during operation: " + str(e))
-
-    # Propagate an operation out via the distributed manager
-    def new_local_operation(self, operation:DatabaseOperation):
-        self.log("New local operation ({}), sending to distributed manager"\
-            .format("insert" if operation.is_insert() else\
-                    "update" if operation.is_update() else\
-                    "delete"))
-
-        # Log a size comparison with the old message size
-        if operation.old_op:
-            self.log(" Size comparison in bytes (new/old): {0}/{1}, old is {2:.3f}x larger"\
-                .format(str(operation.size()), str(operation.old_op.ByteSize()), operation.old_op.ByteSize() / operation.size()))
-
-        if self.distributed_manager:
-            self.distributed_manager.propagate_operation(operation)
-        else:
-            self.log(" No distributed manager found, unable to propagate")
-
-
-    # Debug / test functions (ignore normal checks and logs)
-    # Meant to simulate outside operations
-    def database_insert(self, key:str, data:dict):
-        try:
-            do_insert(self.collection, key, data)
-        except Exception as e:
-            self.log("database_insert failed: " + str(e))
-
-    def database_update(self, key:str, data:dict):
-        try:
-            do_update(self.collection, key, data)
-        except Exception as e:
-            self.log("database_update failed: " + str(e))
-        
-    def database_delete(self, key:str):
-        try:
-            do_delete(self.collection, key)
-        except Exception as e:
-            self.log("database_delete failed: " + str(e))
-
-    def database_get(self, key:str):
-        try:
-            # Try to get op document, return only relevant data
-            res = self.collection.find({"_id":key})
-            if res is not None:
-                try:
-                    return res[0]
-                except IndexError:
-                    return None
-        except Exception as e:
-            self.log("database_get failed: " + str(e))
-        
-
+    def count(self):
+        return self.collection.estimated_document_count()

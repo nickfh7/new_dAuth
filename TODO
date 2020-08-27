@@ -1,21 +1,7 @@
-Major areas to work on:
+Long term goals
+- Add more robust tests
+- Figure out the best comparison in sync manager
 
-> Database Manager:
-  - Update and delete triggers do not have remote and ownership data, creates issue with propagation
-  -- Fix that uses dicts with pending info has been used, works for now
 
-> Distributed manager:
-  - Figure out occasional crashes (Possibly relate to engine getting unhandled pings?)
-
-> Testing:
-  - Add testing for each Manager
-  - Improve performance test
-  - Use real testing data
-
-> Proto:
-  - Change to new format / data (both proto and wrapper)
-
-> Overall:
-  - Transaction ordering? Add a sequence number to databases?
-  -- Assumes no two databases are working on same data within a given time frame 
-  -- (different operation for same seqnums possible otherwise)
+Make a cache for commands in the batch (and update it over time) (needed?)
+Need to guarantee that a get after a put will return the most up to date value

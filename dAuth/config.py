@@ -1,6 +1,6 @@
 import getpass
 
-# This file contains global configuration objects
+# This file contains configuration objects
 # Default values should be set here
 # In the main file, an instance of each of these should be made 
 #  and given to the respective manager
@@ -8,17 +8,14 @@ import getpass
 
 
 # Used for anything not tied to a particular manager
-class CCellularConfig:
-    NAME = "CCellular"
+class CentralManagerConfig:
+    NAME = "Central Manager"
 
     # Randomly generate id in ccellular init
     ID = None
     OUTPUT_DIR = "./output"
 
     LOGGING_ENABLED = True
-
-    # This is the funciton to call after completing startup
-    RUN_FUNCTION = None
 
 
 class NetworkManagerConfig:
@@ -44,18 +41,12 @@ class DatabaseManagerConfig:
     DATABASE_NAME = "open5gs"
     COLLECTION_NAME = "subscribers"
 
-    # Name of distributed manager to talk to
-    DISTRIBUTED_MANAGER_NAME = None
-
 
 class DistributedManagerConfig:
     NAME = "Distributed Manager"
 
-    DATABASE_MANAGER_NAME = DatabaseManagerConfig.NAME
-
     DISTRIBUTION_NAME = 'sawtooth-ccellular'
     VALIDATOR_URL = 'tcp://localhost:4004'
-
 
     CLIENT_URL = 'localhost:8008'
     CLIENT_KEY_PATH = "/home/" + getpass.getuser() + "/.sawtooth/keys/" + getpass.getuser() + ".priv"
@@ -69,5 +60,10 @@ class DistributedManagerConfig:
     BATCH_TIMEOUT = 5         # timeout before sending whatever transaction are available
     BATCH_CHECK_DELAY = 0.01  # delay between checking for new transactions
 
-# Hack, sorry
-DatabaseManagerConfig.DISTRIBUTED_MANAGER_NAME = DistributedManagerConfig.NAME
+
+class SyncManagerConfig:
+    NAME = "Sync Manager"
+    SYNC_ALL_INTERVAL = 60
+    SYNC_REPORTED_INTERVAL = 5
+    SYNC_REPORTED_MAX = 50
+    SYNC_CHECK_DELAY = 0.01

@@ -5,7 +5,7 @@ from pymongo import MongoClient
 
 from dAuth.config import DatabaseManagerConfig
 from dAuth.database.operations import MongoDBOperations
-from dAuth.proto.database import DatabaseOperation
+from dAuth.proto.database_entry import DatabaseEntry
 
 
 # Command line utility for executing operations on the Mongo database
@@ -13,42 +13,16 @@ from dAuth.proto.database import DatabaseOperation
 
 
 # Simple wrapper functions for producing and executing operations
-def do_insert(collection, key:str, data:dict):
-    new_data = copy.copy(data)
-    new_data["_id"] = key
-    operation = DatabaseOperation({"o": new_data}, op_type=DatabaseOperation.INSERT)
-    do_operation(collection, operation)
+def do_insert(collection, entry:DatabaseEntry):
+    MongoDBOperations.insert(collection, entry)
 
-def do_update(collection, key:str, data:dict):
-    new_data = {"o2": {"_id":key}, "o": {"$v": 1, "$set": data}}
-    operation = DatabaseOperation(new_data, op_type=DatabaseOperation.UPDATE)
-    do_operation(collection, operation)
-
-def do_delete(collection, key:str):
-    new_data = {"o": {"_id": key}}
-    operation = DatabaseOperation(new_data, op_type=DatabaseOperation.DELETE)
-    do_operation(collection, operation)
-
-
-# Execute the operation with provided data
-def do_operation(collection, operation:DatabaseOperation):
-    if operation.is_insert():
-        MongoDBOperations.insert(collection, operation)
-
-    elif operation.is_update():
-        MongoDBOperations.update(collection, operation)
-
-    elif operation.is_delete():
-        MongoDBOperations.delete(collection, operation)
-
-    else:
-        raise ValueError("Unknown operation value")
+def do_delete(collection, entry:DatabaseEntry):
+    MongoDBOperations.delete(collection, entry)
 
 
 # Read args from command line and run on database collection
 def main(args_in=None):
-    op_map = {"i": DatabaseOperation.INSERT, "u": DatabaseOperation.UPDATE, "d": DatabaseOperation.DELETE}
-    op_choices = list(op_map.keys())
+    op_choices = ['i', 'd']
     parser = argparse.ArgumentParser(description="Small utility to perform a database operation on a MongoDB."
                                                  " Optional args will use insert and config defaults")
     parser.add_argument("--op-type", default="i", choices=op_choices, help="operation type to perform")
@@ -69,8 +43,11 @@ def main(args_in=None):
     collection = db[args.db_coll]
 
     data = args.data
-    operation = DatabaseOperation(args.data, op_type=op_map[args.op_type])
-    do_operation(collection, operation)
+    entry = DatabaseEntry(args.data)
+    if args.op_type == 'i':
+        do_insert(collection, entry)
+    elif args.op_type == 'd':
+        do_delete(collection, entry)
 
 
 if __name__ == "__main__":
