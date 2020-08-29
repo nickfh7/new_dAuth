@@ -1,3 +1,5 @@
+import time
+
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 from pymongo.database import Collection
@@ -38,7 +40,7 @@ class DatabaseManager(DatabaseManagerInterface):
 
     def _start(self):
         # Set up triggers
-        self.trigger_handler = TriggerHandler(self.client, self.conf.DATABASE_NAME, self.conf.COLLECTION_NAME, logger=self.log)
+        self.trigger_handler = TriggerHandler(self.conf, self.client, self.conf.DATABASE_NAME, self.conf.COLLECTION_NAME, logger=self.log)
         self.trigger_handler.set_insert_callback(self._trigger_callback_key)
         self.trigger_handler.set_update_callback(self._trigger_callback_id)
         self.trigger_handler.set_delete_callback(self._trigger_callback_id)
@@ -74,6 +76,11 @@ class DatabaseManager(DatabaseManagerInterface):
 
     def report_update(self, key):
         self.log("New update reported: " + str(key))
+
+        # EXP logging
+        entry = self.get_entry(key)
+        self.log("<EXP:{}:Issuance> {}-{}B-{}s".format(self.conf.ID, entry.get_id_string(), entry.size(), time.time()))
+
         if self.trigger_callback_func:
             self.trigger_callback_func(key)
 

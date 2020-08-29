@@ -20,6 +20,7 @@ class CentralManagerConfig:
 
 class NetworkManagerConfig:
     NAME = "Network Manager"
+    ID = None
 
     # General
     GRPC_PORT = 13127
@@ -34,6 +35,7 @@ class NetworkManagerConfig:
 
 class DatabaseManagerConfig:
     NAME = "Database Manager"
+    ID = None
 
     # Database
     HOST = 'localhost'
@@ -44,6 +46,7 @@ class DatabaseManagerConfig:
 
 class DistributedManagerConfig:
     NAME = "Distributed Manager"
+    ID = None
 
     DISTRIBUTION_NAME = 'sawtooth-ccellular'
     VALIDATOR_URL = 'tcp://localhost:4004'
@@ -63,6 +66,7 @@ class DistributedManagerConfig:
 
 class SyncManagerConfig:
     NAME = "Sync Manager"
+    ID = None
     SYNC_ALL_INTERVAL = 60
     SYNC_REPORTED_INTERVAL = 5
     SYNC_REPORTED_MAX = 50

@@ -6,6 +6,8 @@ import string
 
 
 def _sha512(data):
+    if (type(data) is str):
+        data = data.encode()
     return hashlib.sha512(data).hexdigest()
 
 

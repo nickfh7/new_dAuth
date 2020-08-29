@@ -31,10 +31,12 @@ class SyncManager(ManagerInterface):
 
         # Distributed entry is more up to date
         if self._needs_update(database_entry, distributed_entry):
+            self.log("<EXP:{}:Confirmation> {}-{}B-{}s".format(self.conf.ID, distributed_entry.get_id_string(), distributed_entry.size(), time.time()))
             self.database_manager.update_entry(distributed_entry)
 
         # Database entry is more up to data
         elif self._needs_update(distributed_entry, database_entry):
+            self.log("<EXP:{}:Outbound> {}-{}B-{}s".format(self.conf.ID, database_entry.get_id_string(), database_entry.size(), time.time()))
             self.distributed_manager.update_entry(database_entry)
 
     def report_update(self, key):
@@ -84,10 +86,10 @@ class SyncManager(ManagerInterface):
     # DOES NOT CHECK THE OTHER WAY AROUND
     def _needs_update(self, entry:DatabaseEntry, compare_to:DatabaseEntry):
         if entry == None:
-            if compare_to == None:
-                self.log("Both entries are None")
-            else:
-                self.log("Entry is None")
+            # if compare_to == None:
+            #     self.log("Both entries are None")
+            # else:
+            #     self.log("Entry is None")
             
             # Anything is better than nothing
             return compare_to != None
@@ -99,29 +101,29 @@ class SyncManager(ManagerInterface):
         #   - Else if max current is equal and length of vectors is *longer*
 
         if entry != None and compare_to != None:
-            self.log("Entry compare (max, cur): entry ({}, {}), compare_to ({}, {})"\
-                     .format(entry.get_max_known_sqn(),
-                             entry.get_max_current_sqn(),
-                             compare_to.get_max_known_sqn(),
-                             compare_to.get_max_current_sqn()))
+            # self.log("Entry compare (max, cur): entry ({}, {}), compare_to ({}, {})"\
+            #          .format(entry.get_max_known_sqn(),
+            #                  entry.get_max_current_sqn(),
+            #                  compare_to.get_max_known_sqn(),
+            #                  compare_to.get_max_current_sqn()))
 
             if entry.get_max_known_sqn() < compare_to.get_max_known_sqn():
-                self.log("Entry has lower max sqn")
+                # self.log("Entry has lower max sqn")
                 return True
 
             elif entry.get_max_known_sqn() == compare_to.get_max_known_sqn():
                 if entry.get_max_current_sqn() == compare_to.get_max_current_sqn():
                     # A list with LESS entries is more up to date
-                    self.log("Entry current max equal")
+                    # self.log("Entry current max equal")
                     return len(entry.get_vectors()) > len(compare_to.get_vectors())
                 else:
                     return entry.get_max_current_sqn() < compare_to.get_max_current_sqn()
 
             else:
-                self.log("Entry has a higher max seqnum")
+                # self.log("Entry has a higher max seqnum")
                 return False
 
-        self.log("Compare To entry is None")
+        # self.log("Compare To entry is None")
         return False
 
     def _start(self):

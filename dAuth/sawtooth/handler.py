@@ -1,3 +1,5 @@
+import time
+
 from sawtooth_sdk.processor.handler import TransactionHandler
 from sawtooth_sdk.processor.exceptions import InternalError
 
@@ -43,6 +45,9 @@ class CCellularHandler(TransactionHandler):
             self.log(" Action is 'set'")
             # use protobuf data to create a DatabaseEntry and execute it
             entry = DatabaseEntry(data)
+
+            # EXP logging
+            self.log("<EXP:{}:Arrival> {}-{}B-{}s".format(self.conf.ID, entry.get_id_string(), entry.size(), time.time()))
 
             try:
                 self.apply_callback(entry.key())

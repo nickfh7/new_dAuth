@@ -54,6 +54,10 @@ class ManagerInterface:
     def set_logger(self, logger_function):
         self.logger = logger_function
 
+    # Called by controlling manager to set id
+    def set_id(self, id):
+        self.conf.ID = id
+
     # Sends a message to the logger
     def log(self, message):
         if self.logger:

@@ -46,6 +46,10 @@ class CentralManager:
         self.distributed_manager.set_logger(self._double_log)
         self.sync_manager.set_logger(self._double_log)
 
+        self.database_manager.set_id(self.id)
+        self.distributed_manager.set_id(self.id)
+        self.sync_manager.set_id(self.id)
+
         self.sync_manager.set_managers(self.distributed_manager, self.database_manager)
 
     # Starts all managers

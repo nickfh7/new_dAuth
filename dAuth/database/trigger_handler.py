@@ -1,10 +1,13 @@
+import time
+
 from mongotriggers import MongoTrigger
 
 # Creates triggers on a mongo database and reports any new operations
 class TriggerHandler:
     # Takes in client, db name, and collection name
     # Optional logger function to capture logs
-    def __init__(self, client, db_name, collection_name, logger=None):
+    def __init__(self, conf, client, db_name, collection_name, logger=None):
+        self.conf = conf
         self.client = client
         self.database = client[db_name]
         self.triggers = MongoTrigger(client)
@@ -52,10 +55,18 @@ class TriggerHandler:
     # Build operation based on op type, called by mongo triggers
     def _handle_insert(self, op_document):
         self.log("Triggered on insert")
+
+        # EXP logging
+        self.log("<EXP:{}:Trigger> {}-{}-{}".format(self.conf.ID, op_document['o']['_id'], op_document['ts'], time.time()))
+
         self.insert_callback(op_document['o']['_id'], op_document['o'].get('imsi'))
         
     def _handle_update(self, op_document):
         self.log("Triggered on update")
+
+        # EXP logging
+        self.log("<EXP:{}:Trigger> {}-{}-{}".format(self.conf.ID, op_document['o2']['_id'], op_document['ts'], time.time()))
+
         self.update_callback(op_document['o2']['_id'])
 
     def _handle_delete(self, op_document):

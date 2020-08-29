@@ -1,6 +1,7 @@
 import json
 
 from dAuth.proto.database_entry_pb2 import DatabaseEntryProto
+from dAuth.utils import _sha512
 
 # Wrapper around a protobuf object
 # Handles the contruction and setting
@@ -72,8 +73,12 @@ class DatabaseEntry:
         self.protobuf_message.max_known_sqn =\
             str(max(self.get_max_known_sqn(), self.get_max_current_sqn()))
 
+    # Creates a hash id string of protobuf message
+    # Returns the first 16 chars
+    def get_id_string(self):
+        return _sha512(self.get_serialized_message())[0:16]
+
     # Returns a dict that represents the protobuf message
-    # Operation is NOT returned in the dict
     @staticmethod
     def protobuf_to_dict(protobuf_message:DatabaseEntryProto):
         return {

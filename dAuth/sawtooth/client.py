@@ -26,13 +26,15 @@ from dAuth.proto.database_entry import DatabaseEntry
 
 # Handles the creation of transactions for locally originating messages
 class CCellularClient:
-    def __init__(self, conf: DistributedManagerConfig):
+    def __init__(self, conf: DistributedManagerConfig, id=None):
         self.conf = conf
         self.url = conf.CLIENT_URL
+        self.id = id
 
         # Transaction batcher
         self.transaction_queue = queue.Queue()
         self.pending_transactions = []
+        self.pending_entries = []
         self.run_check = None
         self.transaction_batcher_thread = None
         self.last_batch_time = 0
@@ -179,6 +181,12 @@ class CCellularClient:
                     self.log("No batch list to send")
                     continue
 
+                # EXP logging
+                temp_list = self.pending_entries
+                self.pending_entries = []
+                for entry in temp_list:
+                    self.log("<EXP:{}:Request> {}-{}B-{}s".format(self.conf.ID, entry.get_id_string(), entry.size(), time.time()))
+
                 # clear the pending list of transactions
                 self.pending_transactions = []
 
@@ -187,6 +195,10 @@ class CCellularClient:
                     "batches", batch_list.SerializeToString(),
                     'application/octet-stream',
                 )
+
+                # EXP logging
+                for entry in temp_list:
+                    self.log("<EXP:{}:Response> {}-{}B-{}s".format(self.conf.ID, entry.get_id_string(), entry.size(), time.time()))
 
             # wait a little before checking again (for performance)
             time.sleep(self.conf.BATCH_CHECK_DELAY)
@@ -221,6 +233,7 @@ class CCellularClient:
         )
 
         self.pending_transactions.append(transaction)
+        self.pending_entries.append(entry)
 
 
     # Creates a transaction batch of one or more transactions
