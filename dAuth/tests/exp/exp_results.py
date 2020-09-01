@@ -10,8 +10,8 @@ import operator
 
 # Class for managing the logged data
 class ExpData:
-    message_types = ["Issuance", "Outbound", "Request", "Response", "Arrival", "Confirmation", "LocalDB"]
-    other_types = ["Trigger"]
+    message_types = ["Issuance", "Outbound", "Request", "Response", "Arrival", "Confirmation", "LocalDB", "State_Delta"]
+    other_types = ["Trigger", "Block_Commit"]
     all_types = message_types + other_types
 
     def __init__(self, data:str):
@@ -21,6 +21,8 @@ class ExpData:
         self.type = None  # Type of log, i.e. 'Issuance'
         self.size = None  # Size of message (Message type only)
         self.mongo_ts = None  # Mongo timestamp (Trigger type only)
+
+        self.valid = False
 
         # get type from data
         match = re.search(r"<EXP:([a-zA-Z0-9_]+):([a-zA-Z0-9_]+)>", data)
@@ -51,6 +53,15 @@ class ExpData:
             self.mongo_ts = float(match[2])
             self.ts = float(match[3])
 
+        elif self.type == "Block_Commit":
+            match = re.search(r"<EXP:[a-zA-Z0-9_:]+> ([0-9.]+)s", data)
+            if (match == None):
+                print("Message data invalid:", data)
+                return
+            self.ts = float(match[1])
+
+        self.valid = True
+
     def entry_str(self) -> str:
         if self.type in self.message_types:
             return str(self.type) + " "*(14 - len(self.type))\
@@ -68,13 +79,15 @@ class ExpData:
     def node_str(self) -> str:
         if self.type in self.message_types:
             return str(self.type) + " "*(14 - len(self.type))\
-                   + str(self.id) + " "*(12 - len(self.node))\
+                   + str(self.id) + " "*(18 - len(self.id))\
                    + str(self.ts) + " "*(20 - len(str(self.ts)))\
                    + str(self.size)
         elif self.type == "Trigger":
-            return str(self.id) + " "*(12 - len(self.node))\
+            return str(self.id) + " "*(26 - len(self.id))\
                    + str(self.ts) + " "*(20 - len(str(self.ts)))\
                    + str(self.mongo_ts)
+        elif self.type == "Block_Commit":
+            return str(self.ts) + " "*(20 - len(str(self.ts)))
         else:
             return "INVALID"
 
@@ -91,7 +104,8 @@ class ExpResults:
 
     def add_entries(self, entries:list):
         for entry in entries:
-            self.add_entry(entry)
+            if entry.valid:
+                self.add_entry(entry)
 
     def add_entry(self, entry:ExpData):
         if entry.type in ExpData.all_types:
@@ -104,6 +118,7 @@ class ExpResults:
             self.entry_messages[entry.id].append(entry)
             self.entry_messages[entry.id].sort(key=operator.attrgetter("ts"))
 
+        if entry.type in ExpData.message_types or entry.type == "Block_Commit":
             if entry.node not in self.node_messages:
                 self.node_messages[entry.node] = []
             self.node_messages[entry.node].append(entry)
@@ -191,7 +206,9 @@ def parse_files_for_entries(logfile_dir:str) -> list:
         with open(filename, 'r') as f:
             for line in f:
                 if "EXP" in line:
-                    entries.append(ExpData(line))
+                    entry = ExpData(line)
+                    if entry.valid:
+                        entries.append(entry)
     
     return entries
 

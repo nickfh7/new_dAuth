@@ -60,7 +60,8 @@ def transaction_poll(tps:float):
         start = time.time()
 
         while True:
-            nodes[0].database_manager.update_entry(DatabaseEntry({"imsi": random_string(15), 'max_known_sqn': "1", "vectors": '[{"sqn":"1"}]'}))
+            entry = DatabaseEntry({"imsi": random_string(15), 'max_known_sqn': "1", "vectors": '[{"sqn":"1"}]'})
+            nodes[0].database_manager.update_entry(entry)
             time.sleep(rate)
 
     except KeyboardInterrupt:

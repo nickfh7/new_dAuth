@@ -19,6 +19,7 @@ class DatabaseEntry:
         elif type(protobuf_data) is bytes:
             self.protobuf_message = DatabaseEntryProto()
             self.protobuf_message.ParseFromString(protobuf_data)
+            self.protobuf_message = self.dict_to_protobuf(self.protobuf_to_dict(self.protobuf_message))
 
         # can also build directly from a protomessage
         elif type(protobuf_data) is DatabaseEntryProto:

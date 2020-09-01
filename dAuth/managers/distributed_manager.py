@@ -5,6 +5,7 @@ from dAuth.config import DistributedManagerConfig
 from dAuth.proto.database_entry import DatabaseEntry
 from dAuth.sawtooth.client import CCellularClient
 from dAuth.sawtooth.handler import CCellularHandler
+from dAuth.sawtooth.event_listener import EventListener
 
 class DistributedManager(DistributedManagerInterface):
     def __init__(self, conf: DistributedManagerConfig):
@@ -26,6 +27,9 @@ class DistributedManager(DistributedManagerInterface):
 
         self.trigger_callback_func = None
 
+        self.event_listener = EventListener(self.conf)
+        self.event_listener.set_logger(self.log)
+
     # Blocking function that runs the transaction processor
     def run_main(self):
         print("Running dAuth Transaction Processor, Ctr-c to stop")
@@ -39,6 +43,10 @@ class DistributedManager(DistributedManagerInterface):
 
         # send a thread to the transaction batcher
         self.client.start_batcher(self.is_running)
+        self.event_listener.start()
+
+    def _stop(self):
+        self.event_listener.stop()
 
     # Get the entry from system state
     def get_entry(self, key):
