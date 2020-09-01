@@ -1,7 +1,7 @@
 import logging
 import os
 
-from dAuth.managers import DatabaseManager, DistributedManager, SyncManager
+from dAuth.managers import DatabaseManager, DistributedManager, SyncManager, NetworkManager
 from dAuth.config import CentralManagerConfig
 from dAuth.utils import random_string
 
@@ -16,9 +16,10 @@ class CentralManager:
         self.database_manager = None
         self.distributed_manager = None
         self.sync_manager = None
+        self.network_manager = None
 
         # logging
-        if conf.LOGGING_ENABLED:
+        if self.conf.LOGGING_ENABLED:
             logger = logging.getLogger("central_manager-" + self.id)
             logger.setLevel(logging.DEBUG)
             os.makedirs(conf.OUTPUT_DIR, exist_ok=True)
@@ -41,14 +42,19 @@ class CentralManager:
         self.database_manager = DatabaseManager(dbm_conf)
         self.distributed_manager = DistributedManager(dist_conf)
         self.sync_manager = SyncManager(sync_conf)
+        self.network_manager = NetworkManager(nwm_config)
+        if self.conf.REMOTE_LOGGING_ENABLED:
+            self.remote_logger = self.network_manager._remote_log
 
         self.database_manager.set_logger(self._double_log)
         self.distributed_manager.set_logger(self._double_log)
         self.sync_manager.set_logger(self._double_log)
+        self.network_manager.set_logger(self._double_log)
 
         self.database_manager.set_id(self.id)
         self.distributed_manager.set_id(self.id)
         self.sync_manager.set_id(self.id)
+        self.network_manager.set_id(self.id)
 
         self.sync_manager.set_managers(self.distributed_manager, self.database_manager)
 
@@ -63,7 +69,7 @@ class CentralManager:
                 self.database_manager.start()
                 self.distributed_manager.start()
                 self.sync_manager.start()
-                # self.network_manager.start()
+                self.network_manager.start()
             except Exception as e:
                 self.log(" Failed to start managers: " + str(e))
 
@@ -83,7 +89,7 @@ class CentralManager:
                 self.database_manager.stop()
                 self.distributed_manager.stop()
                 self.sync_manager.stop()
-                # self.network_manager.stop()
+                self.network_manager.stop()
             except Exception as e:
                 self.log(" Failed to stop managers: " + str(e))
         else:
@@ -101,6 +107,7 @@ class CentralManager:
         if self.conf.LOGGING_ENABLED:
             if self.local_logger:
                 self.local_logger("<{0}> {1}".format(category, message))
+        if self.conf.REMOTE_LOGGING_ENABLED:
             if self.remote_logger:
                 self.remote_logger(category, message)
 

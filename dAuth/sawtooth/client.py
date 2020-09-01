@@ -102,7 +102,7 @@ class CCellularClient:
         result = self._send_request("state", name="GET_ALL_KEYS", params={"address": prefix})
         if result != None:
             try:
-                self.log("json result: " + str(json.loads(result)))
+                # self.log("json result: " + str(json.loads(result)))
                 next_page = json.loads(result)['paging'].get('next')
                 json_result_list = json.loads(result)['data']
                 entry_key_set = set()
@@ -115,7 +115,7 @@ class CCellularClient:
 
                 # Get paginated elements
                 while next_page != None:
-                    self.log("Getting paginated element")
+                    # self.log("Getting paginated element")
                     result_obj = requests.get(next_page)
                     if result_obj != None:
                         if not result_obj.ok:
@@ -126,7 +126,7 @@ class CCellularClient:
 
                         next_page = json.loads(result)['paging'].get('next')
                         json_result_list = json.loads(result)['data']
-                        self.log("json result (pag): " + str(json.loads(result)))
+                        # self.log("json result (pag): " + str(json.loads(result)))
                         for result in json_result_list:
                             data_response = result['data']
                             b64data = yaml.safe_load(data_response)

@@ -4,8 +4,13 @@ import os
 import glob
 import operator
 
+# TODO:
+# - Add separate files for each results type
+
+
+# Class for managing the logged data
 class ExpData:
-    message_types = ["Issuance", "Outbound", "Request", "Response", "Arrival", "Confirmation"]
+    message_types = ["Issuance", "Outbound", "Request", "Response", "Arrival", "Confirmation", "LocalDB"]
     other_types = ["Trigger"]
     all_types = message_types + other_types
 
@@ -46,7 +51,7 @@ class ExpData:
             self.mongo_ts = float(match[2])
             self.ts = float(match[3])
 
-    def entry_str(self):
+    def entry_str(self) -> str:
         if self.type in self.message_types:
             return str(self.type) + " "*(14 - len(self.type))\
                    + str(self.node) + " "*(12 - len(self.node))\
@@ -60,95 +65,152 @@ class ExpData:
         else:
             return "INVALID"
 
-    def node_str(self):
+    def node_str(self) -> str:
         if self.type in self.message_types:
             return str(self.type) + " "*(14 - len(self.type))\
                    + str(self.id) + " "*(12 - len(self.node))\
                    + str(self.ts) + " "*(20 - len(str(self.ts)))\
                    + str(self.size)
         elif self.type == "Trigger":
-            return str(self.type) + " "*(13 - len(self.type))\
-                   + str(self.id) + " "*(12 - len(self.node))\
+            return str(self.id) + " "*(12 - len(self.node))\
                    + str(self.ts) + " "*(20 - len(str(self.ts)))\
                    + str(self.mongo_ts)
         else:
             return "INVALID"
 
 
-# Returns a list of all files within a directory
-def get_files(main_dir:str) -> list:
-    paths = glob.glob(main_dir + '/**/*', recursive=True)
+# Class for managing all of the results
+class ExpResults:
+    def __init__(self):
+        self.entries = []
+        self.entry_messages = {}
+        self.node_messages = {}
+        self.node_triggers = {}
+        self.entry_types = dict.fromkeys(ExpData.all_types, 0)
+        self.nodes = set()
+
+    def add_entries(self, entries:list):
+        for entry in entries:
+            self.add_entry(entry)
+
+    def add_entry(self, entry:ExpData):
+        if entry.type in ExpData.all_types:
+            self.nodes.add(entry.node)
+            self.entry_types[entry.type] += 1
+
+        if entry.type in ExpData.message_types:
+            if entry.id not in self.entry_messages:
+                self.entry_messages[entry.id] = []
+            self.entry_messages[entry.id].append(entry)
+            self.entry_messages[entry.id].sort(key=operator.attrgetter("ts"))
+
+            if entry.node not in self.node_messages:
+                self.node_messages[entry.node] = []
+            self.node_messages[entry.node].append(entry)
+            self.node_messages[entry.node].sort(key=operator.attrgetter("ts"))
+
+        elif entry.type == "Trigger":
+            if entry.node not in self.node_triggers:
+                self.node_triggers[entry.node] = []
+            self.node_triggers[entry.node].append(entry)
+            self.node_triggers[entry.node].sort(key=operator.attrgetter("ts"))
+
+    # Creates a list of strings representing lines of output
+    def get_results(self) -> list:
+        output = []
+
+        # Collect metadate about logging (how many of each type)
+        output.append("Entry metadata")
+        output.append("  Number of nodes: " + str(len(self.nodes)))
+        output.append("  Number of unique entries: " + str(len(self.entry_messages)))
+        output.append("  Entries by type:")
+        for k, v in self.entry_types.items():
+            output.append("    {} {}{}".format(v, " "*(4-len(str(v))), k))
+        output.append("")
+        output.append("")
+        
+        # Collect timestamp sorted trace of all messages
+        output.append("Entry traces")
+        output.append("  <id>:")
+        output.append("    <type>        <node>      <timestamp>         <size>")
+        output.append("")
+        for entry_id, entry_list in self.entry_messages.items():
+            output.append("  {}:".format(entry_id))
+            for entry in entry_list:
+                output.append("    {}".format(entry.entry_str()))
+            output.append("")
+        output.append("")
+
+        # Collect timestamp sorted history of all messages on each node
+        output.append("Node history")
+        output.append("  <node>:")
+        output.append("    <type>        <id>              <timestamp>         <size>")
+        output.append("")
+        for node, entry_list in self.node_messages.items():
+            output.append("  {}:".format(node))
+            for entry in entry_list:
+                output.append("    {}".format(entry.node_str()))
+            output.append("")
+        output.append("")
+
+        # Collect timestamp sorted history of all triggers on each node
+        output.append("Node Triggers")
+        output.append("  <node>:")
+        output.append("    <mongo id>                <timestamp>         <mongo ts>")
+        output.append("")
+        for node, entry_list in self.node_triggers.items():
+            output.append("  {}:".format(node))
+            for entry in entry_list:
+                output.append("    {}".format(entry.node_str()))
+            output.append("")
+        output.append("")
+
+        return output
+
+    def output_results_to_file(self, filename:str):
+        with open(filename, 'w') as f:
+            f.writelines([e + '\n' for e in self.get_results()])
+
+    def output_results_to_console(self):
+        for line in self.get_results():
+            print(line)
+
+
+# Returns a list of entries
+def parse_files_for_entries(logfile_dir:str) -> list:
+    # Get all files
+    paths = glob.glob(logfile_dir + '/**/*', recursive=True)
     files = []
     for path in paths:
         if os.path.isfile(path):
             files.append(path)
 
-    return files
-
-
-def main(main_dir:str) -> None:
-    # Grab all entries from all files in the directory (recursively)
-    files = get_files(main_dir)
+    # Grab all entries from files
     entries = []
     for filename in files:
         with open(filename, 'r') as f:
             for line in f:
                 if "EXP" in line:
                     entries.append(ExpData(line))
-
-    # Collect metadate about logging (how many of each type)
-    print("Entry metadata")
-    node_set = set()
-    for entry in entries:
-        node_set.add(entry.node)
-    print("  Number of nodes:", len(node_set))
-
-    entry_messages = {}
-    for entry in entries:
-        if entry.type in ExpData.message_types:
-            if entry.id not in entry_messages:
-                entry_messages[entry.id] = []
-            
-            entry_messages[entry.id].append(entry)
-    print("  Number of unique entries:", len(entry_messages))
-
-    print("  Entries by type:")
-    entry_types = dict.fromkeys(ExpData.all_types, 0)
-    for entry in entries:
-        entry_types[entry.type] += 1
-    for k, v in entry_types.items():
-        print("    {} {}{}".format(v, " "*(4-len(str(v))), k))
-    print()
     
-    print("Entry traces")
-    for entry_list in entry_messages.values():
-        entry_list.sort(key=operator.attrgetter("ts"))
-    for entry_id, entry_list in entry_messages.items():
-        print("  {}:".format(entry_id))
-        for entry in entry_list:
-            print("    {}".format(entry.entry_str()))
-    print()
+    return entries
 
-    print("Node history")
-    node_messages = {}
-    for entry in entries:
-        if entry.type in ExpData.message_types:
-            if entry.node not in node_messages:
-                node_messages[entry.node] = []
-            
-            node_messages[entry.node].append(entry)
-    for entry_list in node_messages.values():
-        entry_list.sort(key=operator.attrgetter("ts"))
-    for node, entry_list in node_messages.items():
-        print("  {}:".format(node))
-        for entry in entry_list:
-            print("    {}".format(entry.node_str()))
-    print()
-    
+
+# Processes the entries stored withing any files under the provided logfile directory
+def process_results(logfile_dir:str, output_file:str=None) -> ExpResults:
+    results = ExpResults()
+    results.add_entries(parse_files_for_entries(logfile_dir))
+    return results
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Input top level directory of nodes")
+        print("usage: exp_results logfile_dir [output_file]")
         exit(1)
 
-    main(sys.argv[1])
+    results = process_results(sys.argv[1])
+
+    if len(sys.argv) > 2:
+        results.output_results_to_file(sys.argv[2])
+    else:
+        results.output_results_to_console()

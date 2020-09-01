@@ -7,10 +7,10 @@ from network.network_manager import NetworkManager
 
 # Runs a logging server to receive and record log messages
 
-def run_server(port=13173):
+def run_server(port=14127):
     print('Starting Logging Server')
-    nwm = NetworkManager(port=14172)
-    nwm.add_service(LoggingServer())
+    nwm = NetworkManager(port=port)
+    nwm.add_service(LoggingServer(consolidate_on_exit=False))
     nwm.start()
 
     def stop_server(signal, frame):

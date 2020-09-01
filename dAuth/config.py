@@ -16,6 +16,7 @@ class CentralManagerConfig:
     OUTPUT_DIR = "./output"
 
     LOGGING_ENABLED = True
+    REMOTE_LOGGING_ENABLED = False
 
 
 class NetworkManagerConfig:
@@ -23,6 +24,7 @@ class NetworkManagerConfig:
     ID = None
 
     # General
+    GRPC_HOST = "localhost"
     GRPC_PORT = 13127
     OUTPUT_DIR = "./output"
     PRIORITIES = [0,1,2]
@@ -67,7 +69,9 @@ class DistributedManagerConfig:
 class SyncManagerConfig:
     NAME = "Sync Manager"
     ID = None
+
     SYNC_ALL_INTERVAL = 60
     SYNC_REPORTED_INTERVAL = 5
     SYNC_REPORTED_MAX = 50
     SYNC_CHECK_DELAY = 0.01
+    SYNC_INITIAL = True

@@ -57,7 +57,9 @@ class CCellularHandler(TransactionHandler):
             # update the state
             updated_state = dict(state.items())
             updated_state[key] = data
+
             set_state_data(key, updated_state, context)
+            self.log("<EXP:{}:LocalDB> {}-{}B-{}s".format(self.conf.ID, entry.get_id_string(), entry.size(), time.time()))
 
         else:
             raise InternalError('Invalid function requested to be executed by CCellular Handler')

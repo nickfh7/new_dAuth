@@ -47,6 +47,9 @@ class SyncManager(ManagerInterface):
             self.sync_entry(key)
 
     def sync_reported(self):
+        if len(self.reported_updates.keys()) < 1:
+            return
+
         self.log("Syncing reported keys")
         reported_key_list = list(self.reported_updates.keys())
         keys_subset = set()
@@ -139,9 +142,14 @@ class SyncManager(ManagerInterface):
 
         last_sync_all = time.time()
         last_sync_reported = time.time()
+        initial_sync = self.conf.SYNC_INITIAL
         while self._running:
             # update all keys
-            if time.time() - last_sync_all > self.conf.SYNC_ALL_INTERVAL:
+            if self.conf.SYNC_ALL_INTERVAL > 0\
+                    and (time.time() - last_sync_all > self.conf.SYNC_ALL_INTERVAL\
+                         or initial_sync):
+                initial_sync = False
+
                 self.reported_updates.clear()
                 self.report_all()
                 self.sync_reported()

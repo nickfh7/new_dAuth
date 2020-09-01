@@ -43,7 +43,7 @@ class NetworkManager:
         Service._logger_dir = logfile_dir  # Set the service logs dir
 
         # logging
-        self._logger = logging.getLogger("network_manager")
+        self._logger = logging.getLogger("network_manager_" + str(host) + str(port))
         self._logger.setLevel(logging.DEBUG)
         os.makedirs(logfile_dir, exist_ok=True)
         fh = logging.FileHandler(os.path.join(logfile_dir, "network_manager.log"))
@@ -173,7 +173,7 @@ class NetworkManager:
 
     # Intended target for sending threads
     def _send(self, message):
-        # self._log("sending message of size: " + str(message.size()))
+        self._log("sending message of size: " + str(message.size()))
         message.send()
 
     def _log(self, message, tag=None):
