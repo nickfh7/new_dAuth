@@ -27,6 +27,7 @@ Steps:
   - In the top level, run:
     - "dAuth/main.py --help" for a list of options
     - "dAuth/main.py [options]" to run the node
+    - There is a script "./experiment_run.sh" which shows this
 
 4. Collect results:
   - Run "python exp_results.py <logfile directory> [output file]"

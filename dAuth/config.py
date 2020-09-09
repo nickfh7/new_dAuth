@@ -74,8 +74,8 @@ class SyncManagerConfig:
     NAME = "Sync Manager"
     ID = None
 
-    SYNC_ALL_INTERVAL = 60
+    SYNC_ALL_INTERVAL = 300
     SYNC_REPORTED_INTERVAL = 5
     SYNC_REPORTED_MAX = 50
     SYNC_CHECK_DELAY = 0.01
-    SYNC_INITIAL = True
+    SYNC_INITIAL = False
