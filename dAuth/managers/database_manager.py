@@ -78,8 +78,12 @@ class DatabaseManager(DatabaseManagerInterface):
         self.log("New update reported: " + str(key))
 
         # EXP logging
-        entry = self.get_entry(key)
-        self.log("<EXP:{}:Issuance> {}-{}B-{}s".format(self.conf.ID, entry.get_id_string(), entry.size(), time.time()))
+        data = self.collection.find_one({"imsi":key})
+        commit_time = int(str(data['_id'])[0:8], 16)
+
+        entry = DatabaseEntry(data)
+        self.log("<EXP:{}:DB_Commit> {}-{}-{}s".format(self.conf.ID, entry.get_id_string(), commit_time, time.time()))
+        self.log("<EXP:{}:Update> {}-{}B-{}s".format(self.conf.ID, entry.get_id_string(), entry.size(), time.time()))
 
         if self.trigger_callback_func:
             self.trigger_callback_func(key)

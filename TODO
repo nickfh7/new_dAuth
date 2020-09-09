@@ -1,7 +1,0 @@
-Long term goals
-- Add more robust tests
-- Figure out the best comparison in sync manager
-
-
-Make a cache for commands in the batch (and update it over time) (needed?)
-Need to guarantee that a get after a put will return the most up to date value

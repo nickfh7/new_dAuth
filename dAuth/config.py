@@ -16,7 +16,7 @@ class CentralManagerConfig:
     OUTPUT_DIR = "./output"
 
     LOGGING_ENABLED = True
-    REMOTE_LOGGING_ENABLED = False
+    REMOTE_LOGGING_ENABLED = True
 
 
 class NetworkManagerConfig:
@@ -24,7 +24,7 @@ class NetworkManagerConfig:
     ID = None
 
     # General
-    GRPC_HOST = "localhost"
+    GRPC_HOST = "localhost"  # Name only, affects nothing but logging
     GRPC_PORT = 13127
     OUTPUT_DIR = "./output"
     PRIORITIES = [0,1,2]
@@ -33,6 +33,10 @@ class NetworkManagerConfig:
     # Logging
     LOGGING_SERVER_HOST = "localhost"
     LOGGING_SERVER_PORT = 14127
+
+    # Network Poll
+    POLL_INTERVAL = 5  # Seconds
+    POLL_CHECK_DELAY = 0.1
 
 
 class DatabaseManagerConfig:

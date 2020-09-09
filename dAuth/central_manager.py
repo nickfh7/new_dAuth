@@ -42,7 +42,10 @@ class CentralManager:
         self.database_manager = DatabaseManager(dbm_conf)
         self.distributed_manager = DistributedManager(dist_conf)
         self.sync_manager = SyncManager(sync_conf)
+
+        nwm_config.GRPC_HOST = self.id
         self.network_manager = NetworkManager(nwm_config)
+
         if self.conf.REMOTE_LOGGING_ENABLED:
             self.remote_logger = self.network_manager._remote_log
 

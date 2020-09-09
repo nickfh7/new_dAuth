@@ -77,14 +77,21 @@ class EventListener:
                 event_list.ParseFromString(msg.content)
                 for event in event_list.events:
                     if event.event_type == "sawtooth/state-delta":
+                        entries = []
                         for bts in event.data.split(b'\n'):
                             try:
-                                database_entry = DatabaseEntry(b'\n' + bts)
-                                self.log("<EXP:{}:State_Delta> {}-{}B-{}s".format(self.conf.ID, database_entry.get_id_string(), database_entry.size(), time.time()))
+                                entries.append(DatabaseEntry(b'\n' + bts))
                             except:
                                 pass
+                            
+                        if len(entries) > 1:
+                            self.log("<EXP:{}:State_Delta> {}-{}B-{}s".format(self.conf.ID, entries[1].get_id_string(), len(event.data), time.time()))
+                        elif len(entries) > 0:
+                            self.log("<EXP:{}:State_Delta> {}-{}B-{}s".format(self.conf.ID, entries[0].get_id_string(), len(event.data), time.time()))
                     if event.event_type == "sawtooth/block-commit":
-                        self.log("<EXP:{}:Block_Commit> {}s".format(self.conf.ID, time.time()))
+                        for attr in event.attributes:
+                            if attr.key == "block_id":
+                                self.log("<EXP:{}:Block_Commit> {}-{}s".format(self.conf.ID, attr.value, time.time()))
 
 
         # Unsubscribe from events

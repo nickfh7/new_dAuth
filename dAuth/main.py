@@ -13,7 +13,7 @@ from dAuth.parser import parse_args
 def main():
     # Set up config objects and parsing
     cm_config = CentralManagerConfig()
-    nwm_config = None # NetworkManagerConfig()
+    nwm_config = NetworkManagerConfig()
     dbm_config = DatabaseManagerConfig()
     dstm_config = DistributedManagerConfig()
     sync_config = SyncManagerConfig()

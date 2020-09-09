@@ -1,0 +1,35 @@
+General Idea:
+- Assumes 3 nodes, and possible one outside machine (i.e. for sending transactions)
+- Run dAuth on every node, collect all logs in one place, use script to extract results
+
+Steps:
+
+0. Repo
+  - Clone this: https://github.com/nickfh7/new_dAuth
+  - Switch to the 'exp' branch
+
+1. Setup python environment (for every node and outside machine)
+  - In the top level of the repo, run:
+    - "virtualenv -p python3 venv"
+    - "source venv/bin/activate"
+    - "pip install -e ."
+
+2. Start supporting programs (one node or outside machine):
+  - Logging server, which collects logs from other nodes
+    - Must be accessible via network for other nodes
+    - Worst case, if this doesn't work, you'll need to manually collect logs from each node
+    - In the top level, run "python network/logging_server.py [port]"
+      - Port is optional, default is 14127
+
+3. Run dAuth (for every node):
+  - Main file is "dAuth/main.py"
+  - All default configurations are in "dAuth/config.py"
+  - In the top level, run:
+    - "dAuth/main.py --help" for a list of options
+    - "dAuth/main.py [options]" to run the node
+
+4. Collect results:
+  - Run "python exp_results.py <logfile directory> [output file]"
+    - The logfile directory should contain all logfiles (Assumes no duplicates!)
+    - If no output file is specified, just outputs to stdout
+    - Displays a number of useful breakdowns of the data

@@ -4,19 +4,16 @@ import os
 import glob
 import operator
 
-# TODO:
-# - Add separate files for each results type
-
 
 # Class for managing the logged data
 class ExpData:
-    message_types = ["Issuance", "Outbound", "Request", "Response", "Arrival", "Confirmation", "LocalDB", "State_Delta"]
-    other_types = ["Trigger", "Block_Commit"]
+    message_types = ["Update", "Outbound", "Request", "Response", "Arrival", "Confirmation", "Merkle", "State_Delta"]
+    other_types = ["Trigger", "Block_Commit", "DB_Commit"]
     all_types = message_types + other_types
 
     def __init__(self, data:str):
         self.ts = None  # Timestamp
-        self.id = None  # Identifier, i.e. of transaction
+        self.id = 0  # Identifier, i.e. of transaction
         self.node = None  # The node that the logging occured on
         self.type = None  # Type of log, i.e. 'Issuance'
         self.size = None  # Size of message (Message type only)
@@ -50,28 +47,40 @@ class ExpData:
                 print("Message data invalid:", data)
                 return
             self.id = match[1]
-            self.mongo_ts = float(match[2])
+            self.mongo_ts = int(match[2]) * 1000
             self.ts = float(match[3])
 
         elif self.type == "Block_Commit":
-            match = re.search(r"<EXP:[a-zA-Z0-9_:]+> ([0-9.]+)s", data)
+            match = re.search(r"<EXP:[a-zA-Z0-9_:]+> ([a-zA-Z0-9_]+)-([0-9.]+)s", data)
             if (match == None):
                 print("Message data invalid:", data)
                 return
-            self.ts = float(match[1])
+            self.id = match[1]
+            self.ts = float(match[2])
 
+        elif self.type == "DB_Commit":
+            match = re.search(r"<EXP:[a-zA-Z0-9_:]+> ([a-zA-Z0-9_]+)-([0-9]+)-([0-9.]+)s", data)
+            if (match == None):
+                print("Message data invalid:", data)
+                return
+            self.id = match[1]
+            self.mongo_ts = int(match[2]) * 1000
+            self.ts = float(match[3])
+
+
+        self.ts = int(self.ts*1000)
         self.valid = True
 
     def entry_str(self) -> str:
         if self.type in self.message_types:
             return str(self.type) + " "*(14 - len(self.type))\
                    + str(self.node) + " "*(12 - len(self.node))\
-                   + str(self.ts) + " "*(20 - len(str(self.ts)))\
+                   + str(self.ts) + " "*(16 - len(str(self.ts)))\
                    + str(self.size)
-        elif self.type == "Trigger":
-            return str(self.type) + " "*(13 - len(self.type))\
+        elif self.type == "Trigger" or self.type == "DB_Commit":
+            return str(self.type) + " "*(14 - len(self.type))\
                    + str(self.node) + " "*(12 - len(self.node))\
-                   + str(self.ts) + " "*(20 - len(str(self.ts)))\
+                   + str(self.ts) + " "*(16 - len(str(self.ts)))\
                    + str(self.mongo_ts)
         else:
             return "INVALID"
@@ -80,14 +89,17 @@ class ExpData:
         if self.type in self.message_types:
             return str(self.type) + " "*(14 - len(self.type))\
                    + str(self.id) + " "*(18 - len(self.id))\
-                   + str(self.ts) + " "*(20 - len(str(self.ts)))\
+                   + str(self.ts) + " "*(16 - len(str(self.ts)))\
                    + str(self.size)
-        elif self.type == "Trigger":
-            return str(self.id) + " "*(26 - len(self.id))\
-                   + str(self.ts) + " "*(20 - len(str(self.ts)))\
+        elif self.type == "Trigger" or self.type == "DB_Commit":
+            return str(self.type) + " "*(14 - len(self.type))\
+                   + str(self.id) + " "*(26 - len(self.id))\
+                   + str(self.ts) + " "*(16 - len(str(self.ts)))\
                    + str(self.mongo_ts)
         elif self.type == "Block_Commit":
-            return str(self.ts) + " "*(20 - len(str(self.ts)))
+            return str(self.type) + " "*(14 - len(self.type))\
+                   + str(self.id)[0:16] + " "*(2)\
+                   + str(self.ts) + " "*(16 - len(str(self.ts)))
         else:
             return "INVALID"
 
@@ -112,7 +124,7 @@ class ExpResults:
             self.nodes.add(entry.node)
             self.entry_types[entry.type] += 1
 
-        if entry.type in ExpData.message_types:
+        if entry.type in ExpData.message_types or entry.type == "DB_Commit":
             if entry.id not in self.entry_messages:
                 self.entry_messages[entry.id] = []
             self.entry_messages[entry.id].append(entry)
@@ -131,64 +143,95 @@ class ExpResults:
             self.node_triggers[entry.node].sort(key=operator.attrgetter("ts"))
 
     # Creates a list of strings representing lines of output
-    def get_results(self) -> list:
+    def get_results(self) -> dict:
+        results = {}
         output = []
+        
+        # Collect timestamp sorted trace of all messages
+        insert_to_block_commit_delay = []
+        output = []
+        results["traces"] = {}
+        traces = results["traces"]
+        for entry_id, entry_list in self.entry_messages.items():
+            traces[entry_id] = output
 
+            # Data about trace
+            start = None
+            end = None
+            for entry in entry_list:  # Sorted
+                if not start:
+                    if entry.type == "DB_Commit":
+                        start = entry
+                elif not end:
+                    if entry.type == "State_Delta":
+                        end = entry
+                else:
+                    break
+
+            if start is not None and end is not None:
+                delay = end.ts - start.ts
+                insert_to_block_commit_delay.append(delay)
+                output.append("Delay from commit to insert: {}ms".format(str(delay)))
+                output.append("")
+
+            # Actual trace
+            output.append("Trace:")
+            output.append("<type>        <node>      <timestamp ms>  <size or other>")
+            for entry in entry_list:
+                output.append("{}".format(entry.entry_str()))
+            output = []
+
+        # Collect timestamp sorted history of all messages on each node
+        output = []
+        results["nodes"] = {}
+        nodes = results["nodes"]
+        for entry_id, entry_list in self.node_messages.items():
+            nodes[entry_id] = output
+            output.append("<type>        <id>              <timestamp ms>  <size or other>")
+            for entry in entry_list:
+                output.append("{}".format(entry.node_str()))
+            output = []
+
+        # Collect timestamp sorted history of all triggers on each node
+        output = []
+        results["triggers"] = {}
+        triggers = results["triggers"]
+        for entry_id, entry_list in self.node_triggers.items():
+            triggers[entry_id] = output
+            output.append("<type>        <mongo id>                <timestamp ms>  <mongo ts>")
+            for entry in entry_list:
+                output.append("{}".format(entry.node_str()))
+            output = []
+        
         # Collect metadate about logging (how many of each type)
-        output.append("Entry metadata")
+        results["summary"] = output
+        output.append("Summary:")
         output.append("  Number of nodes: " + str(len(self.nodes)))
         output.append("  Number of unique entries: " + str(len(self.entry_messages)))
+        output.append("  Avg delay insert to block commit: {}ms".format(str(sum(insert_to_block_commit_delay) // len(insert_to_block_commit_delay))))
+        output.append("   * Affected by both sync rate and batch rate, check config")
         output.append("  Entries by type:")
         for k, v in self.entry_types.items():
             output.append("    {} {}{}".format(v, " "*(4-len(str(v))), k))
-        output.append("")
-        output.append("")
-        
-        # Collect timestamp sorted trace of all messages
-        output.append("Entry traces")
-        output.append("  <id>:")
-        output.append("    <type>        <node>      <timestamp>         <size>")
-        output.append("")
-        for entry_id, entry_list in self.entry_messages.items():
-            output.append("  {}:".format(entry_id))
-            for entry in entry_list:
-                output.append("    {}".format(entry.entry_str()))
-            output.append("")
-        output.append("")
 
-        # Collect timestamp sorted history of all messages on each node
-        output.append("Node history")
-        output.append("  <node>:")
-        output.append("    <type>        <id>              <timestamp>         <size>")
-        output.append("")
-        for node, entry_list in self.node_messages.items():
-            output.append("  {}:".format(node))
-            for entry in entry_list:
-                output.append("    {}".format(entry.node_str()))
-            output.append("")
-        output.append("")
+        return results
 
-        # Collect timestamp sorted history of all triggers on each node
-        output.append("Node Triggers")
-        output.append("  <node>:")
-        output.append("    <mongo id>                <timestamp>         <mongo ts>")
-        output.append("")
-        for node, entry_list in self.node_triggers.items():
-            output.append("  {}:".format(node))
-            for entry in entry_list:
-                output.append("    {}".format(entry.node_str()))
-            output.append("")
-        output.append("")
+    def output_results(self, output_dir:str):
+        results = self.get_results()
+        self._output_results(output_dir, results)
 
-        return output
-
-    def output_results_to_file(self, filename:str):
-        with open(filename, 'w') as f:
-            f.writelines([e + '\n' for e in self.get_results()])
-
-    def output_results_to_console(self):
-        for line in self.get_results():
-            print(line)
+    def _output_results(self, output_dir:str, results:dict):
+        os.makedirs(output_dir, exist_ok=True)
+        for name in results.keys():
+            path = os.path.join(output_dir, name)
+            content = results[name]
+            if type(content) is dict:
+                self._output_results(path, content)
+            elif type(content) is list:
+                with open(path, 'w') as f:
+                    f.writelines([e + '\n' for e in content])
+            else:
+                print("Bad result type:", str(content))
 
 
 # Returns a list of entries
@@ -221,13 +264,9 @@ def process_results(logfile_dir:str, output_file:str=None) -> ExpResults:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("usage: exp_results logfile_dir [output_file]")
+    if len(sys.argv) < 3:
+        print("usage: exp_results logfile_dir output_dir")
         exit(1)
 
     results = process_results(sys.argv[1])
-
-    if len(sys.argv) > 2:
-        results.output_results_to_file(sys.argv[2])
-    else:
-        results.output_results_to_console()
+    results.output_results(sys.argv[2])
