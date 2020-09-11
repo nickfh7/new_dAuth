@@ -8,7 +8,7 @@ import operator
 # Class for managing the logged data
 class ExpData:
     message_types = ["Update", "Outbound", "Request", "Response", "Arrival", "Confirmation", "Merkle", "State_Delta"]
-    other_types = ["Trigger", "Block_Commit", "DB_Commit"]
+    other_types = ["Trigger", "Block_Commit", "DB_Commit", "NW_Usage"]
     all_types = message_types + other_types
 
     def __init__(self, data:str):
@@ -18,6 +18,11 @@ class ExpData:
         self.type = None  # Type of log, i.e. 'Issuance'
         self.size = None  # Size of message (Message type only)
         self.mongo_ts = None  # Mongo timestamp (Trigger type only)
+
+        # Network usage info
+        self.tx = None
+        self.rx = None
+        self.interface = None
 
         self.valid = False
 
@@ -67,6 +72,20 @@ class ExpData:
             self.mongo_ts = int(match[2]) * 1000
             self.ts = float(match[3])
 
+        elif self.type == "NW_Usage":
+            match = re.search(r"<EXP:[a-zA-Z0-9_:]+> ([a-zA-Z0-9\-_]+):([a-zA-Z0-9_]+)rx-([0-9]+)tx-([0-9.]+)s", data)
+            if (match == None):
+                print("Message data invalid:", data)
+                return
+            self.interface = match[1]
+            self.rx = int(match[2])
+            self.tx = int(match[3])
+            self.ts = float(match[4])
+
+        else:
+            print("Unused type:", self.type)
+            return
+
 
         self.ts = int(self.ts*1000)
         self.valid = True
@@ -111,6 +130,7 @@ class ExpResults:
         self.entry_messages = {}
         self.node_messages = {}
         self.node_triggers = {}
+        self.nw_usages = {}
         self.entry_types = dict.fromkeys(ExpData.all_types, 0)
         self.nodes = set()
 
@@ -136,11 +156,22 @@ class ExpResults:
             self.node_messages[entry.node].append(entry)
             self.node_messages[entry.node].sort(key=operator.attrgetter("ts"))
 
-        elif entry.type == "Trigger":
+        if entry.type == "Trigger":
             if entry.node not in self.node_triggers:
                 self.node_triggers[entry.node] = []
             self.node_triggers[entry.node].append(entry)
             self.node_triggers[entry.node].sort(key=operator.attrgetter("ts"))
+
+        if entry.type == "NW_Usage":
+            if entry.node not in self.nw_usages:
+                self.nw_usages[entry.node] = {}
+
+            if entry.interface not in self.nw_usages[entry.node]:
+                self.nw_usages[entry.node][entry.interface] = []
+            
+            self.nw_usages[entry.node][entry.interface].append(entry)
+            self.nw_usages[entry.node][entry.interface].sort(key=operator.attrgetter("ts"))
+
 
     # Creates a list of strings representing lines of output
     def get_results(self) -> dict:
@@ -213,6 +244,41 @@ class ExpResults:
         output.append("  Entries by type:")
         for k, v in self.entry_types.items():
             output.append("    {} {}{}".format(v, " "*(4-len(str(v))), k))
+
+        # Collect network usage history
+        results["nw_usage"] = {}
+        nodes = results["nw_usage"]
+        for node, interfaces in self.nw_usages.items():
+            for interface, entries in interfaces.items():
+                if len(entries) < 2:
+                    continue
+
+                if node not in nodes:
+                    nodes[node] = {}
+                nodes[node][interface] = output
+
+                rx_snaps = [e.rx for e in entries]
+                tx_snaps = [e.tx for e in entries]
+                ts_snaps = [e.ts for e in entries]
+
+                avg_rx = (rx_snaps[-1] - rx_snaps[0]) // (len(entries) - 1)
+                avg_tx = (tx_snaps[-1] - tx_snaps[0]) // (len(entries) - 1)
+                avg_ts = (ts_snaps[-1] - ts_snaps[0]) // (len(entries) - 1)
+
+                output.append("Measure rate: {} s".format(avg_ts / 1000))
+                output.append("Average rx rate: {} B/s".format(avg_rx/avg_ts*1000))
+                output.append("Average tx rate: {} B/s".format(avg_tx/avg_ts*1000))
+                output.append("")
+
+                output.append("All rx measurements:")
+                output.append("<Bytes since last>  <timestamp ms>")
+                le = entries[0]
+                for entry in entries[1:]:
+                    val = str(entry.rx - le.rx)
+                    output.append("{}{}  {}".format(val, " "*(len("<Bytes since last>") - len(val)), entry.ts))
+                    le = entry
+
+                output = []
 
         return results
 
