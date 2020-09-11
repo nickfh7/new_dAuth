@@ -18,6 +18,5 @@ if __name__ == '__main__':
             'console_scripts': [
                 'dauth-main = dAuth.main:main',
                 'logging-server = network.logging_server:run_server',
-                'db-operation = dAuth.database.operations_cli:main',
             ]
         })

@@ -1,42 +1,33 @@
-dAuth
--------
-
-<TODO>
-
+This guide only covers using dAuth, NOT sawtooth or mongo
 
 Install
 -------
-WITH DOCKER:
-Build the local image with the following command (in root dir of project):
-- docker build -t dauth .
-
-Run dauth with and mongodb with:
-- docker-compose -f dauth_setup.yaml up
-
-To configure the node, edit the yaml file directly
-
-
-WITHOUT DOCKER:
-Set up dAuth
-1. Create a virtual environment (i.e. 'virtualenv -p python3 venv'), then activate it ('source venv/bin/activate')
+1. Create a virtual environment ('virtualenv -p python3 venv'), 
+    then activate it ('source venv/bin/activate')
 2. Install dAuth with 'pip install -e .'
-3a. Run CCellular with 'ccellular'
-3b. Run the logging server with 'logging-server'
 
 
-Set up Database
-1. create a new directory for the database (i.e. 'data/), and create two subdirectories 'db/' and 'replica/'
-2. Set up the db and replica with the following commands (run every time you start the dbs):
-   mongod --dbpath db/ --replSet rs0                    # main db
-   mongod --dbpath replica/ --port 27018 --replSet rs0  # replica
-3. Initialize the setup (ONLY THE FIRST TIME):
-   mongo   # start mongo client
-   > rs.initiate()
-   > rs.add("localhost:27018")
-   > rs.status()
-   > rs.conf()     # To check for configuration
-   > rs.slaveOk()  # To ensure that the slave / replica nodes can be enabled for read
+Setup
+-------
+1. Make sure Sawtooth is running and accessible by dAuth
+2. Make sure the Mongo DBs are running accessible by dAuth
+3. [Optional] set up the logging server via:
+    'python network/logging_server.py [port]' or 
+    'logging-server [port]'
+4. Start dAuth by running 
+    'python dAuth/main.py [options]' or
+    'dauth-main [options]'
+4a. List the options using '--help'
+ *Note: Most config options are available as command line args, 
+        but some may need to be done manually (in dAuth/config.py)
 
 
-Set up Sawtooth
-<TODO>
+Testing
+--------
+There are two test docker compose yamls that make sawtooth and mongo easy
+1. Start sawtooth by running 'docker-compose -f ./docker/sawtooth-poet.yaml up'
+   (for single node testing, run 'docker-compose -f ./docker/sawtooth-solo.yaml up')
+2. Start a mongo replica setup with 'docker-compose -f ./docker/mongodb_setup.yaml up'
+3. Run a dAuth test, there are many example under dAuth/testing (some may be out of date)
+4. Between tests, make sure to reset the sawtooth nodes by bringing it down, 
+    then pruning containers and volumes
